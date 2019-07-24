@@ -21,17 +21,16 @@ plugins {
 node {
     // Version of node to use.
 
-    version = "10.14.1"
+    version = "10.16.0"
 
     // Version of npm to use.
 
-    npmVersion = "6.4.1"
+    npmVersion = "6.9.0"
 
     // If true, it will download node using above parameters.
 
     // If false, it will try to use globally installed node.
 
     download = true
-    
 
 }
