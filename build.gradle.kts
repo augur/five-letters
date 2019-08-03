@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kmongoVersion = "3.10.2"
+val javaJwtVersion = "3.8.1"
 
 plugins {
 	id("org.springframework.boot") version "2.1.6.RELEASE"
@@ -25,6 +26,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.litote.kmongo:kmongo:$kmongoVersion")
+	implementation("com.auth0:java-jwt:$javaJwtVersion")
 	
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
