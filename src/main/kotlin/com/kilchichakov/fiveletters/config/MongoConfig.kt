@@ -11,7 +11,7 @@ class MongoConfig {
 
     @Bean
     fun mongoDatabase(): MongoDatabase {
-        val client = KMongo.createClient() //get com.mongodb.MongoClient new instance
+        val client = KMongo.createClient("localhost", 27018)
         return client.getDatabase("five-letters") //normal java driver usage
     }
 }

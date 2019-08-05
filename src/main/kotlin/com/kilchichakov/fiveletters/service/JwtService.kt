@@ -2,11 +2,10 @@ package com.kilchichakov.fiveletters.service
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.kilchichakov.fiveletters.model.User
+import com.kilchichakov.fiveletters.model.UserData
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
-import com.auth0.jwt.interfaces.DecodedJWT
-
 
 
 @Service
@@ -21,10 +20,10 @@ class JwtService(
             .build()
 
 
-    fun generateToken(user: User): String {
+    fun generateToken(userDetails: UserDetails): String {
         return JWT.create()
                 .withIssuer(issuer)
-                .withSubject(user.login)
+                .withSubject(userDetails.username)
                 .sign(algorithm)
     }
 
