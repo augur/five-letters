@@ -1,9 +1,11 @@
 package com.kilchichakov.fiveletters.controller
 
-import com.kilchichakov.fiveletters.model.dto.AuthToken
-import com.kilchichakov.fiveletters.model.dto.Credentials
+import com.kilchichakov.fiveletters.model.dto.AuthResponse
+import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.service.AuthService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -20,12 +22,13 @@ class AuthController {
     private lateinit var authService: AuthService
 
     @PostMapping("/do")
-    fun authenticate(@RequestBody credentials: Credentials): AuthToken {
-        return authService.authenticate(credentials.login, credentials.password)
+    fun authenticate(@RequestBody authRequest: AuthRequest): AuthResponse {
+        return authService.authenticate(authRequest.login, authRequest.password)
     }
 
     @GetMapping("/hi")
     fun helloWorld(): String {
-        return "hello!!"
+        val auth = SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken
+        return "hello, ${auth.name}"
     }
 }
