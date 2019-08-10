@@ -49,7 +49,7 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
         security
                 .httpBasic().disable()
                 .cors().and().csrf().disable()
-                .authorizeRequests().antMatchers("/auth/do").permitAll()
+                .authorizeRequests().antMatchers("/auth/do", "/register").permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
