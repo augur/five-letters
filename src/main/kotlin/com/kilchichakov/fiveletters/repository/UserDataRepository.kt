@@ -18,15 +18,11 @@ class UserDataRepository(
 
     private val collection = db.getCollection<UserData>()
 
+    fun insertNewUser(userData: UserData) {
+        collection.insertOne(userData)
+    }
 
     fun loadUserData(login: String): UserData? {
         return collection.findOne(UserData::login eq login)
-    }
-
-    @PostConstruct
-    fun test() {
-        println("test")
-
-        //collection.insertOne(UserData(null, "nick", "password", "Nickel"))
     }
 }
