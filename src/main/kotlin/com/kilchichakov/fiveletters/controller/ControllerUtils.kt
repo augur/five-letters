@@ -4,17 +4,22 @@ import com.kilchichakov.fiveletters.exception.BackendException
 import com.kilchichakov.fiveletters.exception.ErrorCode.GENERIC_ERROR
 import com.kilchichakov.fiveletters.exception.ErrorCode.NO_ERROR
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 
 
 object ControllerUtils {
 
-    fun processAndRespondCode(block: () -> Unit): OperationCodeResponse {
+    fun processAndRespondCode(authorized: Boolean = true, block: (String?) -> Unit): OperationCodeResponse {
         return try {
-            block()
+            val login =
+                    if (authorized) (SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken).name
+                    else null
+            block(login)
             OperationCodeResponse(NO_ERROR.numeric)
-        } catch (e : BackendException) {
+        } catch (e: BackendException) {
             OperationCodeResponse(e.errorCode.numeric, e.message)
-        } catch (e : Exception) {
+        } catch (e: Exception) {
             OperationCodeResponse(GENERIC_ERROR.numeric, e.message)
         }
     }
