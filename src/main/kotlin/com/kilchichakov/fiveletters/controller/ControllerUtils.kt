@@ -10,11 +10,13 @@ import org.springframework.security.core.context.SecurityContextHolder
 
 object ControllerUtils {
 
+    fun getLogin(): String? {
+        return (SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken).name
+    }
+
     fun processAndRespondCode(authorized: Boolean = true, block: (String?) -> Unit): OperationCodeResponse {
         return try {
-            val login =
-                    if (authorized) (SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken).name
-                    else null
+            val login = if (authorized) getLogin() else null
             block(login)
             OperationCodeResponse(NO_ERROR.numeric)
         } catch (e: BackendException) {

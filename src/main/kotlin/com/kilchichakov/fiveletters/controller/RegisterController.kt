@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.lang.IllegalStateException
 
 @RestController
 @RequestMapping("register")
@@ -21,7 +20,8 @@ class RegisterController {
     @PostMapping
     fun register(@RequestBody request: RegisterRequest): OperationCodeResponse {
         return processAndRespondCode(false) {
-            userService.registerNewUser(request.login, request.password)
+            if (request.passCode == "XXX-YYY-ZZZ")
+                userService.registerNewUser(request.login, request.password)
         }
     }
 }

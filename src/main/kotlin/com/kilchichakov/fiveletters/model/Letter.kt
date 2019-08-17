@@ -8,5 +8,6 @@ data class Letter(
         val login: String,
         val message: String,
         val isRead: Boolean,
+        val sendDate: Date,
         val openDate: Date
 )

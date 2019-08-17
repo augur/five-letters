@@ -4,5 +4,6 @@ import com.kilchichakov.fiveletters.model.LetterPeriodType
 
 data class SendLetterRequest(
         val message: String,
-        val period: LetterPeriodType
+        val period: LetterPeriodType,
+        val timezoneOffset: Int = 0
 )
