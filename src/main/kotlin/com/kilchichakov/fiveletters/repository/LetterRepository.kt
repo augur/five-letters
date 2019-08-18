@@ -5,7 +5,9 @@ import com.mongodb.client.MongoDatabase
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.getCollection
+import org.litote.kmongo.lte
 import org.springframework.stereotype.Repository
+import java.util.Date
 
 @Repository
 class LetterRepository(
@@ -21,7 +23,8 @@ class LetterRepository(
     fun getNewLetters(login: String): List<Letter> {
         val byLogin = Letter::login eq login
         val byIsRead = Letter::isRead eq false
-        val found = collection.find(and(byLogin, byIsRead))
+        val byOpenDate = Letter::openDate lte Date()
+        val found = collection.find(and(byLogin, byIsRead, byOpenDate))
         return found.toList()
     }
 
