@@ -2,6 +2,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kmongoVersion = "3.10.2"
 val javaJwtVersion = "3.8.1"
+val mockkioVersion = "1.9.3"
+val junitVersion = "5.5.1"
+val assertJVersion = "3.11.1"
 
 plugins {
 	id("org.springframework.boot") version "2.1.6.RELEASE"
@@ -30,6 +33,11 @@ dependencies {
 	
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
+	testImplementation("io.mockk:mockk:$mockkioVersion")
+	testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+	testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+	testImplementation("org.junit.platform:junit-platform-commons:1.4.1")
+	testImplementation("org.assertj:assertj-core:$assertJVersion")
 }
 
 tasks.withType<KotlinCompile> {

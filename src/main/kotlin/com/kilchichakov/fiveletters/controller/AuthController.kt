@@ -21,13 +21,13 @@ class AuthController {
     @Autowired
     private lateinit var authService: AuthService
 
-    @PostMapping("/do")
+    @PostMapping
     fun authenticate(@RequestBody authRequest: AuthRequest): AuthResponse {
         return authService.authenticate(authRequest.login, authRequest.password)
     }
 
-    @GetMapping("/hi")
-    fun helloWorld(): String {
+    @GetMapping("/whoami")
+    fun whoAmI(): String {
         val auth = SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken
         return "hello, ${auth.name}"
     }
