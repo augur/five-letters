@@ -36,6 +36,8 @@ dependencies {
 	testImplementation("io.mockk:mockk:$mockkioVersion")
 	testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
 	testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+	testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
+
 	testImplementation("org.junit.platform:junit-platform-commons:1.4.1")
 	testImplementation("org.assertj:assertj-core:$assertJVersion")
 }
