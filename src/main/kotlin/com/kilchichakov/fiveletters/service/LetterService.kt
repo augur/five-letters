@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.LetterPeriodType
 import com.kilchichakov.fiveletters.repository.LetterRepository
@@ -22,6 +23,12 @@ class LetterService {
 
     fun getNewLetters(login: String): List<Letter> {
         return letterRepository.getNewLetters(login)
+    }
+
+    fun markLetterAsRead(login: String, letterId: String) {
+        if (!letterRepository.markLetterAsRead(login, letterId)) {
+            throw DatabaseException("Unexpected update result during markLetterAsRead()")
+        }
     }
 
     private fun calcOpenDate(periodType: LetterPeriodType, timezoneOffset: Int): Date {

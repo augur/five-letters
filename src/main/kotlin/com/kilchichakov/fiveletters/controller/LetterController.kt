@@ -33,4 +33,11 @@ class LetterController {
         val letters = letterService.getNewLetters(getLogin()!!)
         return GetNewLettersResponse(letters.map { LetterDto(it._id!!.toHexString(), it.sendDate, it.message) })
     }
+
+    @PostMapping("/markRead")
+    fun markAsRead(@RequestBody letterId: String): OperationCodeResponse {
+        return processAndRespondCode { login ->
+            letterService.markLetterAsRead(login!!, letterId)
+        }
+    }
 }
