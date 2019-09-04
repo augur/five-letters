@@ -5,6 +5,7 @@ val javaJwtVersion = "3.8.1"
 val mockkioVersion = "1.9.3"
 val junitVersion = "5.5.1"
 val assertJVersion = "3.11.1"
+val embeddedMongoVersion = "2.2.0"
 
 plugins {
 	id("org.springframework.boot") version "2.1.6.RELEASE"
@@ -37,7 +38,7 @@ dependencies {
 	testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
 	testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 	testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
-
+	testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embeddedMongoVersion")
 	testImplementation("org.junit.platform:junit-platform-commons:1.4.1")
 	testImplementation("org.assertj:assertj-core:$assertJVersion")
 }
