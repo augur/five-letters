@@ -5,11 +5,7 @@ import com.mongodb.client.MongoDatabase
 import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
 import org.litote.kmongo.getCollection
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Repository
-import javax.annotation.PostConstruct
 
 @Repository
 class UserDataRepository(
