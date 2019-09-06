@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse
 import org.apache.tomcat.jni.User.username
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
@@ -34,10 +36,11 @@ class JwtRequestFilter : OncePerRequestFilter() {
         if (requestTokenHeader.startsWith(TOKEN_PREFIX)) {
 
             val jwtToken = requestTokenHeader.substring(TOKEN_PREFIX.length)
-            val userName = jwtService.validateToken(jwtToken)
+            val (userName, roles) = jwtService.validateToken(jwtToken)
 
             if (userName != null && SecurityContextHolder.getContext().authentication == null) {
-                val user = User(userName, PASSWORD_PLACEHOLDER, emptyList())
+                val authorities = roles.map { SimpleGrantedAuthority(it) }
+                val user = User(userName, PASSWORD_PLACEHOLDER, authorities)
                 val authToken = UsernamePasswordAuthenticationToken(user, null, user.authorities)
                 authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
                 SecurityContextHolder.getContext().authentication = authToken

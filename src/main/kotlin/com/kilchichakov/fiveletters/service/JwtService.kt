@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.kilchichakov.fiveletters.model.UserData
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.util.Calendar
@@ -30,19 +31,25 @@ class JwtService(
                 .withIssuer(issuer)
                 .withSubject(userDetails.username)
                 .withExpiresAt(calendar.time)
+                .withArrayClaim("roles", (userDetails.authorities.map { a -> a.authority }).toTypedArray())
                 .sign(algorithm)
     }
 
     /**
      * @return login of user, or null if not authorized
      */
-    fun validateToken(token: String): String? {
+    fun validateToken(token: String): DecodedJwt {
         return try {
             val jwt = verifier.verify(token)!!
-            jwt.subject
+            val roles = jwt.getClaim("roles").asList(String::class.java).orEmpty()
+            DecodedJwt(jwt.subject, roles)
         } catch (e : Exception) {
-            null
+            DecodedJwt(null, emptyList())
         }
     }
 
+    data class DecodedJwt(
+            val username: String?,
+            val roles: List<String>
+    )
 }
