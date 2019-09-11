@@ -6,6 +6,8 @@ val mockkioVersion = "1.9.3"
 val junitVersion = "5.5.1"
 val assertJVersion = "3.11.1"
 val embeddedMongoVersion = "2.2.0"
+val muLoggingVersion = "1.5.9"
+val slf4jVersion = "1.7.5"
 
 plugins {
 	id("org.springframework.boot") version "2.1.6.RELEASE"
@@ -26,12 +28,16 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.litote.kmongo:kmongo:$kmongoVersion")
 	implementation("com.auth0:java-jwt:$javaJwtVersion")
-	
+	implementation("io.github.microutils:kotlin-logging:$muLoggingVersion")
+	implementation("org.slf4j:slf4j-api:$slf4jVersion")
+	//implementation("org.slf4j:slf4j-log4j12:$slf4jVersion")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("io.mockk:mockk:$mockkioVersion")
