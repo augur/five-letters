@@ -28,9 +28,9 @@ class LoggedAspect {
         if (isTop) MDC.put(ENTRY, "0x" + traceIndex.incrementAndGet().toString(16))
         try {
             return pjp.proceed()
-//        } catch (t: Throwable) {
-//            //LOG.error { "caught $t" }
-//            throw t
+        } catch (t: Throwable) {
+            if (isTop) LOG.error { "caught $t" }
+            throw t
         } finally {
             if (isTop) MDC.remove(ENTRY)
         }
