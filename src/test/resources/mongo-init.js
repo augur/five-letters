@@ -8,3 +8,5 @@ db.letter.createIndex(
     },
     { unique: false }
 )
+
+db.createCollection('systemState', { capped: true, size: 65536, max: 1 } )
