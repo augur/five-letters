@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.repository
 
+import com.kilchichakov.fiveletters.MongoTestSuite
 import com.kilchichakov.fiveletters.model.UserData
 import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
@@ -20,54 +21,14 @@ import org.junit.jupiter.api.assertThrows
 import org.litote.kmongo.KMongo
 
 
-internal class UserDataRepositoryTest {
+internal class UserDataRepositoryTest : MongoTestSuite() {
 
-    lateinit var repository: UserDataRepository
-
-    val initScript = UserDataRepositoryTest::class.java.classLoader.getResource("mongo-init.js").readText()
-
-    companion object {
-
-        lateinit var mongodExecutable: MongodExecutable
-        lateinit var client: MongoClient
-
-        @BeforeAll
-        @JvmStatic
-        fun setUp() {
-            val starter = MongodStarter.getDefaultInstance()
-
-            val bindIp = "localhost"
-            val port = 12345
-            val mongodConfig = MongodConfigBuilder()
-                    .version(Version.Main.PRODUCTION)
-                    .net(Net(bindIp, port, Network.localhostIsIPv6()))
-                    .build()
-
-            mongodExecutable = starter.prepare(mongodConfig)
-            mongodExecutable.start()
-
-            client = KMongo.createClient(bindIp, port)
-        }
-
-        @AfterAll
-        @JvmStatic
-        fun tearDown() {
-            mongodExecutable.stop()
-        }
-    }
+    private lateinit var repository: UserDataRepository
 
     @BeforeEach
-    fun setUpEach() {
-        val db = client.getDatabase("test")
-        val script = BasicDBObject()
-        script["eval"] = initScript
-        db.runCommand(script)
+    override fun setUpEach() {
+        super.setUpEach()
         repository = UserDataRepository(db)
-    }
-
-    @AfterEach
-    fun tearDownEach() {
-        client.dropDatabase("test")
     }
 
     @Test

@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kmongoVersion = "3.10.2"
+val kmongoVersion = "3.11.0"
 val javaJwtVersion = "3.8.1"
 val mockkioVersion = "1.9.3"
 val junitVersion = "5.5.1"

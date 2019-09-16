@@ -7,7 +7,7 @@ data class Letter(
         val _id: ObjectId?,
         val login: String,
         val message: String,
-        val isRead: Boolean,
+        val read: Boolean,
         val sendDate: Date,
         val openDate: Date
 )
