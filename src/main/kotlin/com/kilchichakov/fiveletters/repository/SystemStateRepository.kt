@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.repository
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.DEFAULT_STATE
 import com.kilchichakov.fiveletters.model.SystemState
 import com.mongodb.client.MongoDatabase
@@ -18,18 +19,23 @@ class SystemStateRepository(
     private val collection = db.getCollection<SystemState>()
 
     fun read(): SystemState {
+        LOG.info { "reading systemState" }
         collection.findOne().let {
             if (it == null) {
+                LOG.info { "systemState is null, returning $DEFAULT_STATE" }
                 collection.insertOne(DEFAULT_STATE)
                 return DEFAULT_STATE
             }
+            LOG.info { "found systemState: $it" }
             return it
         }
     }
 
     fun switchRegistration(enable: Boolean) {
+        LOG.info { "switching registration to $enable" }
         val filter = BsonDocument.parse("{}")
         val update = setValue(SystemState::registrationEnabled, enable)
         collection.updateOne(filter, update)
+        LOG.info { "switched" }
     }
 }

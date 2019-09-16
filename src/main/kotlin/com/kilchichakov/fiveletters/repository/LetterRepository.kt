@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.repository
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.util.now
 import com.mongodb.client.MongoDatabase
@@ -21,22 +22,27 @@ class LetterRepository(
     private val collection = db.getCollection<Letter>()
 
     fun saveNewLetter(letter: Letter) {
+        LOG.info { "saving new letter $letter" }
         collection.insertOne(letter)
     }
 
     fun getNewLetters(login: String): List<Letter> {
+        LOG.info { "getting new letters of $login" }
         val byLogin = Letter::login eq login
         val byIsRead = Letter::read eq false
         val byOpenDate = Letter::openDate lte clock.now()
         val found = collection.find(and(byLogin, byIsRead, byOpenDate))
+        LOG.info { "found ${found.count()} letters" }
         return found.toList()
     }
 
     fun markLetterAsRead(login: String, id: String): Boolean {
+        LOG.info { "marking letter $id of $login as read"}
         val byLogin = Letter::login eq login
         val byId = Letter::_id eq ObjectId(id)
         val update = setValue(Letter::read, true)
         val result = collection.updateOne(and(byId, byLogin), update)
+        LOG.info { "marked ${result.modifiedCount} letters" }
         return result.modifiedCount == 1L
     }
 

@@ -21,6 +21,9 @@ class UserDataRepository(
     }
 
     fun loadUserData(login: String): UserData? {
-        return collection.findOne(UserData::login eq login)
+        LOG.info { "loading userData of $login" }
+        return collection.findOne(UserData::login eq login).also {
+            LOG.info { "found userData $it" }
+        }
     }
 }

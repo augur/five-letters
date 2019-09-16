@@ -21,7 +21,7 @@ class LetterController {
     @Autowired
     lateinit var letterService: LetterService
 
-    @PostMapping("send")
+    @PostMapping("/send")
     fun send(@RequestBody request: SendLetterRequest): OperationCodeResponse {
         return processAndRespondCode { login ->
             letterService.sendLetter(login!!, request.message, request.period, request.timezoneOffset)
