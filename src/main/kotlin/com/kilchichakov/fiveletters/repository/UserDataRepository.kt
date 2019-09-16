@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.repository
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.UserData
 import com.mongodb.client.MongoDatabase
 import org.litote.kmongo.eq
@@ -15,6 +16,7 @@ class UserDataRepository(
     private val collection = db.getCollection<UserData>()
 
     fun insertNewUser(userData: UserData) {
+        LOG.info { "inserting user $userData" }
         collection.insertOne(userData)
     }
 

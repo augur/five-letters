@@ -1,6 +1,8 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.model.UserData
+import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -18,11 +20,19 @@ class UserService : UserDetailsService {
     private lateinit var userDataDataRepository: UserDataRepository
 
     @Autowired
+    private lateinit var systemStateRepository: SystemStateRepository
+
+    @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
     fun registerNewUser(login: String, password: String) {
-        val userData = UserData(null, login, passwordEncoder.encode(password), "")
-        userDataDataRepository.insertNewUser(userData)
+        if (systemStateRepository.read().registrationEnabled) {
+            val userData = UserData(null, login, passwordEncoder.encode(password), "")
+            userDataDataRepository.insertNewUser(userData)
+        } else {
+            throw SystemStateException("Registration is disabled")
+        }
+
     }
 
     override fun loadUserByUsername(login: String): UserDetails {

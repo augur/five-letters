@@ -1,5 +1,7 @@
 package com.kilchichakov.fiveletters.controller
 
+import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.controller.ControllerUtils.processAndRespondCode
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
@@ -18,10 +20,15 @@ class RegisterController {
     private lateinit var userService: UserService
 
     @PostMapping
+    @Logged
     fun register(@RequestBody request: RegisterRequest): OperationCodeResponse {
         return processAndRespondCode(false) {
+            LOG.info { "asked to register, ${request.copy(password = "********")}" }
+
             if (request.passCode == "XXX-YYY-ZZZ")
                 userService.registerNewUser(request.login, request.password)
+        }.also {
+            LOG.info { "response is $it" }
         }
     }
 }
