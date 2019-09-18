@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
@@ -26,6 +27,7 @@ class UserService : UserDetailsService {
     private lateinit var passwordEncoder: PasswordEncoder
 
     fun registerNewUser(login: String, password: String) {
+        LOG.info { "registering new user $login" }
         if (systemStateRepository.read().registrationEnabled) {
             val userData = UserData(null, login, passwordEncoder.encode(password), "")
             userDataDataRepository.insertNewUser(userData)
@@ -36,6 +38,7 @@ class UserService : UserDetailsService {
     }
 
     override fun loadUserByUsername(login: String): UserDetails {
+        LOG.info { "loading by login $login" }
         val data = userDataDataRepository.loadUserData(login)!!
         val authorities = if (data.admin) listOf(SimpleGrantedAuthority("ROLE_ADMIN")) else emptyList()
         return User(data.login, data.password, authorities)

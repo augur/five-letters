@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.LetterPeriodType
@@ -18,14 +19,18 @@ class LetterService {
 
     fun sendLetter(login: String, message: String, period: LetterPeriodType, timezoneOffset: Int) {
         val letter = Letter(null, login, message, false, Calendar.getInstance().time, calcOpenDate(period, timezoneOffset))
+        LOG.info { "sending letter $letter" }
         letterRepository.saveNewLetter(letter)
+        LOG.info { "sent" }
     }
 
     fun getNewLetters(login: String): List<Letter> {
+        LOG.info { "getting new letters for user $login" }
         return letterRepository.getNewLetters(login)
     }
 
     fun markLetterAsRead(login: String, letterId: String) {
+        LOG.info { "marking letter $letterId of user $login as read" }
         if (!letterRepository.markLetterAsRead(login, letterId)) {
             throw DatabaseException("Unexpected update result during markLetterAsRead()")
         }

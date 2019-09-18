@@ -2,6 +2,8 @@ package com.kilchichakov.fiveletters.service
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.controller.logResult
 import com.kilchichakov.fiveletters.model.UserData
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.GrantedAuthority
@@ -27,11 +29,13 @@ class JwtService(
     fun generateToken(userDetails: UserDetails): String {
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.SECOND, ttlSeconds)
+        val roles = (userDetails.authorities.map { a -> a.authority }).toTypedArray()
+        LOG.info { "generating token: ${userDetails.username}, $issuer, ${calendar.time}, $algorithm, ${roles.toList()}" }
         return JWT.create()
                 .withIssuer(issuer)
                 .withSubject(userDetails.username)
                 .withExpiresAt(calendar.time)
-                .withArrayClaim("roles", (userDetails.authorities.map { a -> a.authority }).toTypedArray())
+                .withArrayClaim("roles", roles)
                 .sign(algorithm)
     }
 
@@ -44,6 +48,7 @@ class JwtService(
             val roles = jwt.getClaim("roles").asList(String::class.java).orEmpty()
             DecodedJwt(jwt.subject, roles)
         } catch (e : Exception) {
+            LOG.error(e) { "caught during token $token validation" }
             DecodedJwt(null, emptyList())
         }
     }

@@ -32,10 +32,10 @@ class SystemStateRepository(
     }
 
     fun switchRegistration(enable: Boolean) {
-        LOG.info { "switching registration to $enable" }
+        LOG.info { "updating registration to $enable" }
         val filter = BsonDocument.parse("{}")
         val update = setValue(SystemState::registrationEnabled, enable)
         collection.updateOne(filter, update)
-        LOG.info { "switched" }
+        LOG.info { "updated" }
     }
 }

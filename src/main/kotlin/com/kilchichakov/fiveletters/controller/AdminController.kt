@@ -38,8 +38,8 @@ class AdminController {
     @PostMapping("/registration")
     @Logged
     fun switchRegistration(@RequestParam enabled: Boolean) {
-        LOG.info { "asked to switch registration to $enabled" }
         ControllerUtils.getLogin()
+        LOG.info { "asked to switch registration to $enabled" }
         systemService.switchRegistration(enabled)
     }
 }

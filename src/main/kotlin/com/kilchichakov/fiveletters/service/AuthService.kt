@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.dto.AuthResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.AuthenticationManager
@@ -21,8 +22,11 @@ class AuthService {
 
     fun authenticate(username: String, password: String): AuthResponse {
         try {
+            LOG.info { "authenticating" }
             val authed = authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username, password))
+            LOG.info { "authed is $authed" }
             val userDetails = authed.principal as UserDetails
+            LOG.info { "userDetails are $userDetails" }
             return AuthResponse(jwtService.generateToken(userDetails))
         } catch (e: DisabledException) {
             throw Exception("USER_DISABLED", e)

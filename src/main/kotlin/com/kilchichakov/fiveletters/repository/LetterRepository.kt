@@ -22,12 +22,13 @@ class LetterRepository(
     private val collection = db.getCollection<Letter>()
 
     fun saveNewLetter(letter: Letter) {
-        LOG.info { "saving new letter $letter" }
+        LOG.info { "inserting new letter $letter" }
         collection.insertOne(letter)
+        LOG.info { "inserted" }
     }
 
     fun getNewLetters(login: String): List<Letter> {
-        LOG.info { "getting new letters of $login" }
+        LOG.info { "load new letters of user $login" }
         val byLogin = Letter::login eq login
         val byIsRead = Letter::read eq false
         val byOpenDate = Letter::openDate lte clock.now()
@@ -37,12 +38,12 @@ class LetterRepository(
     }
 
     fun markLetterAsRead(login: String, id: String): Boolean {
-        LOG.info { "marking letter $id of $login as read"}
+        LOG.info { "updating letter $id of $login as read"}
         val byLogin = Letter::login eq login
         val byId = Letter::_id eq ObjectId(id)
         val update = setValue(Letter::read, true)
         val result = collection.updateOne(and(byId, byLogin), update)
-        LOG.info { "marked ${result.modifiedCount} letters" }
+        LOG.info { "updated ${result.modifiedCount} letters" }
         return result.modifiedCount == 1L
     }
 

@@ -18,6 +18,7 @@ class UserDataRepository(
     fun insertNewUser(userData: UserData) {
         LOG.info { "inserting user $userData" }
         collection.insertOne(userData)
+        LOG.info { "inserted" }
     }
 
     fun loadUserData(login: String): UserData? {
