@@ -24,11 +24,8 @@ class RegisterController {
     fun register(@RequestBody request: RegisterRequest): OperationCodeResponse {
         return processAndRespondCode(false) {
             LOG.info { "asked to register, ${request.copy(password = "********")}" }
-
             if (request.passCode == "XXX-YYY-ZZZ")
                 userService.registerNewUser(request.login, request.password)
-        }.also {
-            LOG.info { "response is $it" }
-        }
+        }.logResult()
     }
 }

@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.controller
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.BackendException
 import com.kilchichakov.fiveletters.exception.ErrorCode.GENERIC_ERROR
 import com.kilchichakov.fiveletters.exception.ErrorCode.NO_ERROR
@@ -12,7 +13,9 @@ object ControllerUtils {
 
     fun getLogin(): String? {
         return (SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken).name
+                .also { LOG.info { "user: $it" }  }
     }
+
 
     fun processAndRespondCode(authorized: Boolean = true, block: (String?) -> Unit): OperationCodeResponse {
         return try {
@@ -25,4 +28,8 @@ object ControllerUtils {
             OperationCodeResponse(GENERIC_ERROR.numeric, e.message)
         }
     }
+
 }
+
+fun <T> T.logResult(): T =
+        this.also { LOG.info { "result is $it" } }

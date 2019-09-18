@@ -28,12 +28,14 @@ class AuthController {
         LOG.info { "authentication request, login: ${authRequest.login}" }
         val result = authService.authenticate(authRequest.login, authRequest.password)
         LOG.info { "success" }
-        return result
+        return result.logResult()
     }
 
     @GetMapping("/whoami")
+    @Logged
     fun whoAmI(): String {
+        LOG.info { "asked whoami" }
         val auth = SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken
-        return "hello, ${auth.name}"
+        return "hello, ${auth.name}".logResult()
     }
 }

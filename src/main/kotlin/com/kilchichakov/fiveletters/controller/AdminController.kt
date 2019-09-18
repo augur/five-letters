@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.controller
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.SystemService
@@ -28,13 +29,17 @@ class AdminController {
 
     @GetMapping("/whoami")
     fun whoAmI(): String {
+        LOG.info { "asked whoami" }
         val auth = SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken
         return "hello, ${auth.name}"
+                .logResult()
     }
 
     @PostMapping("/registration")
     @Logged
     fun switchRegistration(@RequestParam enabled: Boolean) {
+        LOG.info { "asked to switch registration to $enabled" }
+        ControllerUtils.getLogin()
         systemService.switchRegistration(enabled)
     }
 }
