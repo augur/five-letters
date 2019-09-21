@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.config
 
+import com.mongodb.ConnectionString
 import com.mongodb.MongoCredential
 import com.mongodb.ServerAddress
 import com.mongodb.client.MongoDatabase
@@ -16,9 +17,17 @@ class MongoConfig {
     fun mongoDatabase(@Value("\${MONGO_LOGIN}") login: String,
                       @Value("\${MONGO_PASSWORD}") password: String,
                       @Value("\${MONGO_HOST}") host: String,
-                      @Value("\${MONGO_PORT}") port: Int): MongoDatabase {
-        val cred = MongoCredential.createCredential(login, "admin", password.toCharArray())
-        val client = KMongo.createClient(ServerAddress(host, port), listOf(cred))
+                      @Value("\${MONGO_PORT}") port: Int,
+                      @Value("\${MONGO_SRV_MODE}") srvMode: Boolean): MongoDatabase {
+
+        val connectionString = ConnectionString(
+                if (srvMode) {
+                    "mongodb+srv://$login:$password@$host/admin?retryWrites=true&w=majority"
+                } else {
+                    "mongodb://$login:$password@$host:$port/admin?retryWrites=true&w=majority"
+                }
+        )
+        val client = KMongo.createClient(connectionString)
         return client.getDatabase("five-letters")
     }
 }
