@@ -26,6 +26,7 @@ class UserService : UserDetailsService {
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
+    //TODO check licence
     fun registerNewUser(login: String, password: String) {
         LOG.info { "registering new user $login" }
         if (systemStateRepository.read().registrationEnabled) {

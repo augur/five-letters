@@ -22,18 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 class AdminController {
 
     @Autowired
-    lateinit var db: MongoDatabase
-
-    @Autowired
     lateinit var systemService: SystemService
-
-    @GetMapping("/whoami")
-    fun whoAmI(): String {
-        LOG.info { "asked whoami" }
-        val auth = SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken
-        return "hello, ${auth.name}"
-                .logResult()
-    }
 
     @PostMapping("/registration")
     @Logged
