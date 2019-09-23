@@ -36,7 +36,7 @@ class LetterService {
         }
     }
 
-    private fun calcOpenDate(periodType: LetterPeriodType, timezoneOffset: Int): Date {
+    internal fun calcOpenDate(periodType: LetterPeriodType, timezoneOffset: Int): Date {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         //calendar.time = SimpleDateFormat("YYYY-MM-dd").parse("2018-12-31")
         when(periodType) {
