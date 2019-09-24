@@ -25,7 +25,7 @@ class RegisterController {
         return processAndRespondCode(false) {
             LOG.info { "asked to register, ${request.copy(password = "********")}" }
             if (request.passCode == "XXX-YYY-ZZZ") //TODO move into service
-                userService.registerNewUser(request.login, request.password)
+                userService.registerNewUser(request.login, request.password, request.acceptLicense)
         }.logResult()
     }
 }

@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.SystemStateException
+import com.kilchichakov.fiveletters.exception.TermsOfUseException
 import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
@@ -26,16 +27,13 @@ class UserService : UserDetailsService {
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
-    //TODO check licence
-    fun registerNewUser(login: String, password: String) {
+    fun registerNewUser(login: String, password: String, licenceAccepted: Boolean) {
         LOG.info { "registering new user $login" }
-        if (systemStateRepository.read().registrationEnabled) {
-            val userData = UserData(null, login, passwordEncoder.encode(password), "")
-            userDataDataRepository.insertNewUser(userData)
-        } else {
-            throw SystemStateException("Registration is disabled")
-        }
+        if (!licenceAccepted) throw TermsOfUseException("Licence was not accepted")
+        if (!systemStateRepository.read().registrationEnabled) throw SystemStateException("Registration is disabled")
 
+        val userData = UserData(null, login, passwordEncoder.encode(password), "")
+        userDataDataRepository.insertNewUser(userData)
     }
 
     override fun loadUserByUsername(login: String): UserDetails {

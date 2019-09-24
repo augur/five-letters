@@ -9,3 +9,5 @@ sealed class BackendException(
 class DatabaseException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.DB, message, cause)
 
 class SystemStateException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.STATE, message, cause)
+
+class TermsOfUseException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.TOU, message, cause)
