@@ -68,15 +68,14 @@ publishing {
 			name = "GitHubPackages"
 			url = uri("https://maven.pkg.github.com/augur/five-letters")
 			credentials {
-				username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USER")
-				password = project.findProperty("gpr.key") as String? ?: System.getenv("GPR_API_KEY")
+				username = System.getenv("GPR_USER")
+				password = System.getenv("GPR_API_KEY")
 			}
 		}
 	}
 	publications {
-		register("mavenJava", MavenPublication::class) {
+		register("gpr", MavenPublication::class) {
 			from(components["java"])
-			artifact(sourcesJar.get())
 		}
 	}
 }
