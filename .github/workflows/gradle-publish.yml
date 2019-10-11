@@ -15,5 +15,6 @@ jobs:
         java-version: 1.8
     - name: Publish with Gradle
       run: ./gradlew publish
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GPR_USER: augur
+        GPR_API_KEY: ${{ secrets.PACKAGE_API_KEY }}

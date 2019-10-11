@@ -14,6 +14,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.0.7.RELEASE"
 	kotlin("jvm") version "1.3.41"
 	kotlin("plugin.spring") version "1.3.41"
+    `maven-publish`
 }
 
 group = "com.kilchichakov"
@@ -53,5 +54,29 @@ tasks.withType<KotlinCompile> {
 	kotlinOptions {
 		freeCompilerArgs = listOf("-Xjsr305=strict")
 		jvmTarget = "1.8"
+	}
+}
+
+val sourcesJar by tasks.registering(Jar::class) {
+	classifier = "sources"
+	from(sourceSets.main.get().allSource)
+}
+
+publishing {
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/augur/five-letters")
+			credentials {
+				username = project.findProperty("gpr.user") as String? ?: System.getenv("GPR_USER")
+				password = project.findProperty("gpr.key") as String? ?: System.getenv("GPR_API_KEY")
+			}
+		}
+	}
+	publications {
+		register("mavenJava", MavenPublication::class) {
+			from(components["java"])
+			artifact(sourcesJar.get())
+		}
 	}
 }
