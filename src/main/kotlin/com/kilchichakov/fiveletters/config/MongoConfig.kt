@@ -1,6 +1,7 @@
 package com.kilchichakov.fiveletters.config
 
 import com.mongodb.ConnectionString
+import com.mongodb.MongoClient
 import com.mongodb.MongoCredential
 import com.mongodb.ServerAddress
 import com.mongodb.client.MongoDatabase
@@ -14,11 +15,11 @@ import org.springframework.context.annotation.Configuration
 class MongoConfig {
 
     @Bean
-    fun mongoDatabase(@Value("\${MONGO_LOGIN}") login: String,
-                      @Value("\${MONGO_PASSWORD}") password: String,
-                      @Value("\${MONGO_HOST}") host: String,
-                      @Value("\${MONGO_PORT}") port: Int,
-                      @Value("\${MONGO_SRV_MODE}") srvMode: Boolean): MongoDatabase {
+    fun mongoClient(@Value("\${MONGO_LOGIN}") login: String,
+                    @Value("\${MONGO_PASSWORD}") password: String,
+                    @Value("\${MONGO_HOST}") host: String,
+                    @Value("\${MONGO_PORT}") port: Int,
+                    @Value("\${MONGO_SRV_MODE}") srvMode: Boolean): MongoClient {
 
         val connectionString = ConnectionString(
                 if (srvMode) {
@@ -27,7 +28,11 @@ class MongoConfig {
                     "mongodb://$login:$password@$host:$port/admin?retryWrites=true&w=majority"
                 }
         )
-        val client = KMongo.createClient(connectionString)
+        return KMongo.createClient(connectionString)
+    }
+
+    @Bean
+    fun mongoDatabase(client: MongoClient): MongoDatabase {
         return client.getDatabase("five-letters")
     }
 }
