@@ -14,6 +14,11 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.litote.kmongo.KMongo
+import de.flapdoodle.embed.mongo.MongodProcess
+import de.flapdoodle.embed.mongo.config.MongoCmdOptionsBuilder
+import com.mongodb.BasicDBList
+import org.bson.Document
+
 
 open class MongoTestSuite {
 
@@ -23,8 +28,14 @@ open class MongoTestSuite {
 
     companion object {
 
-        private lateinit var mongodExecutable: MongodExecutable
-        private lateinit var client: MongoClient
+        private var node1MongodExe: MongodExecutable? = null
+        private var node1Mongod: MongodProcess? = null
+        private var node2MongodExe: MongodExecutable? = null
+        private var node2Mongod: MongodProcess? = null
+        private var node3MongodExe: MongodExecutable? = null
+        private var node3Mongod: MongodProcess? = null
+
+        lateinit var client: MongoClient
 
         @BeforeAll
         @JvmStatic
@@ -32,27 +43,72 @@ open class MongoTestSuite {
             val starter = MongodStarter.getDefaultInstance()
 
             val bindIp = "localhost"
-            val port = 12345
-            val mongodConfig = MongodConfigBuilder()
-                    .version(Version.Main.PRODUCTION)
-                    .net(Net(bindIp, port, Network.localhostIsIPv6()))
-                    .build()
 
-            mongodExecutable = starter.prepare(mongodConfig)
-            mongodExecutable.start()
+            val node1Port = 12345
+            val node2Port = 12346
+            val node3Port = 12347
 
-            client = KMongo.createClient(bindIp, port)
+//            val mongodConfig = MongodConfigBuilder()
+//                    .version(Version.Main.PRODUCTION)
+//                    .net(Net(bindIp, port, Network.localhostIsIPv6()))
+//                    .build()
+
+            node1MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
+                    .withLaunchArgument("--replSet", "rs0")
+                    .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
+                    .net(Net(bindIp, node1Port, Network.localhostIsIPv6()))
+                    .build())
+
+            node1Mongod = node1MongodExe?.start()
+
+            node2MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
+                    .withLaunchArgument("--replSet", "rs0")
+                    .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
+                    .net(Net(bindIp, node2Port, Network.localhostIsIPv6()))
+                    .build())
+            node2Mongod = node2MongodExe?.start()
+
+            node3MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
+                    .withLaunchArgument("--replSet", "rs0")
+                    .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
+                    .net(Net(bindIp, node3Port, Network.localhostIsIPv6()))
+                    .build())
+            node3Mongod = node3MongodExe?.start()
+
+
+            client = KMongo.createClient(bindIp, node1Port)
+
+
+            val adminDatabase = client.getDatabase("admin")
+
+            val config = Document("_id", "rs0")
+            val members = BasicDBList()
+            members.add(Document("_id", 0)
+                    .append("host", "$bindIp:$node1Port"))
+            members.add(Document("_id", 1)
+                    .append("host", "$bindIp:$node2Port"))
+            members.add(Document("_id", 2)
+                    .append("host", "$bindIp:$node3Port"))
+            config["members"] = members
+
+            adminDatabase.runCommand(Document("replSetInitiate", config))
         }
 
         @AfterAll
         @JvmStatic
         fun tearDown() {
-            mongodExecutable.stop()
+            node1MongodExe?.stop()
+            node1Mongod?.stop()
+            node2MongodExe?.stop()
+            node2Mongod?.stop()
+            node3MongodExe?.stop()
+            node3Mongod?.stop()
         }
     }
 
     @BeforeEach
     open fun setUpEach() {
+        Thread.sleep(30000)
         db = client.getDatabase("test")
         val script = BasicDBObject()
         script["eval"] = initScript

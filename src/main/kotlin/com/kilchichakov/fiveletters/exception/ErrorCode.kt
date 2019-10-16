@@ -5,5 +5,6 @@ enum class ErrorCode(val numeric: Int) {
     DB(1000),
     STATE(2000),
     TOU(3000),
+    DATA(4000),
     GENERIC_ERROR(9000)
 }

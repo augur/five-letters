@@ -11,3 +11,5 @@ class DatabaseException(message: String, cause: Throwable? = null) : BackendExce
 class SystemStateException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.STATE, message, cause)
 
 class TermsOfUseException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.TOU, message, cause)
+
+class DataException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.DATA, message, cause)
