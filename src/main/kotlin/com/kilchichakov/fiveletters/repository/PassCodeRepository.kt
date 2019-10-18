@@ -20,18 +20,23 @@ import java.time.Clock
 @Repository
 class PassCodeRepository(
         db: MongoDatabase,
-        private val transactionWrapper: TransactionWrapper,
         private val clock: Clock
 ) {
 
     private val collection = db.getCollection<PassCode>()
 
+    fun insertPassCode(passCode: PassCode) {
+        collection.insertOne(passCode)
+    }
+
     fun findPassCode(code: String): PassCode? {
         return collection.findOneById(code)
     }
 
-    fun consumeOneTimePassCode(passCode: OneTimePassCode, login: String, clientSession: ClientSession) {
+    fun consumeOneTimePassCode(code: String, login: String, clientSession: ClientSession) {
         val now = clock.now()
+        val passCode = collection.findOneById(clientSession, code) ?: throw DatabaseException("Not found passCode $code")
+        passCode as? OneTimePassCode ?: throw DataException("Passcode $code is not OneTimePasscode")
         if (now > passCode.validUntil) throw DataException("PassCode $passCode is overdue")
         val oneTimePassCodeConsumed = OneTimePassCodeConsumed(passCode._id, login, now)
         val result = collection.updateOneById(clientSession, passCode._id, oneTimePassCodeConsumed, UpdateOptions(), updateOnlyNotNullProperties = false)

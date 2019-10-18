@@ -108,7 +108,7 @@ open class MongoTestSuite {
 
     @BeforeEach
     open fun setUpEach() {
-        Thread.sleep(30000)
+        Thread.sleep(15000)
         db = client.getDatabase("test")
         val script = BasicDBObject()
         script["eval"] = initScript
