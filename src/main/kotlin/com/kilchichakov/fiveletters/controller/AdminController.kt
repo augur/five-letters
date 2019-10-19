@@ -2,7 +2,9 @@ package com.kilchichakov.fiveletters.controller
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
+import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.service.LetterService
+import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
 import com.kilchichakov.fiveletters.service.UserService
 import com.mongodb.client.MongoDatabase
@@ -24,11 +26,22 @@ class AdminController {
     @Autowired
     lateinit var systemService: SystemService
 
+    @Autowired
+    lateinit var passCodeService: PassCodeService
+
     @PostMapping("/registration")
     @Logged
     fun switchRegistration(@RequestParam enabled: Boolean) {
         ControllerUtils.getLogin()
         LOG.info { "asked to switch registration to $enabled" }
         systemService.switchRegistration(enabled)
+    }
+
+    @PostMapping("/passcodes/create/otp")
+    @Logged
+    fun generateOneTimePassCode(@RequestParam seconds: Long): OneTimePassCode {
+        ControllerUtils.getLogin()
+        LOG.info { "asked to generate one-time passcode with seconds valid = $seconds" }
+        return passCodeService.generateOneTimePassCode(seconds)
     }
 }

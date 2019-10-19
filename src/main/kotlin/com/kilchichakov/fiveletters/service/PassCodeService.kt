@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.model.PassCode
@@ -24,7 +25,9 @@ class PassCodeService(
     fun generateOneTimePassCode(secondsValid: Long): OneTimePassCode {
         val validUntil = Date.from(clock.instant().plusMillis(secondsValid * 1000))
         val passCode = OneTimePassCode(generateUUID(), validUntil)
+        LOG.info { "new one-time passcode: $passCode" }
         passCodeRepository.insertPassCode(passCode)
+        LOG.info { "generated" }
         return passCode
     }
 

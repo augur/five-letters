@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.repository
 
+import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.OneTimePassCode
@@ -26,7 +27,9 @@ class PassCodeRepository(
     private val collection = db.getCollection<PassCode>()
 
     fun insertPassCode(passCode: PassCode) {
+        LOG.info { "inserting $passCode" }
         collection.insertOne(passCode)
+        LOG.info { "inserted" }
     }
 
     fun findPassCode(code: String): PassCode? {
