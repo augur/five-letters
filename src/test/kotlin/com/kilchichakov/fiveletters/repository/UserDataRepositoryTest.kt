@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.litote.kmongo.KMongo
+import java.lang.RuntimeException
 
 
 internal class UserDataRepositoryTest : MongoTestSuite() {
@@ -39,7 +40,9 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
 
         // When
         val before = repository.loadUserData(login)
-        repository.insertNewUser(newUser)
+        transactionWrapper.executeInTransaction {
+            repository.insertNewUser(newUser, it)
+        }
         val after = repository.loadUserData(login)
 
         // Then
@@ -49,12 +52,37 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
     }
 
     @Test
+    fun `should not insert due to external error`() {
+        // Given
+        val login = "someLogin"
+        val newUser = UserData(null, login, "pwd", "nick")
+
+        // When
+        assertThrows<RuntimeException> {
+            transactionWrapper.executeInTransaction {
+                repository.insertNewUser(newUser, it)
+                throw RuntimeException()
+            }
+        }
+        val after = repository.loadUserData(login)
+
+        // Then
+        assertThat(after).isNull()
+    }
+
+    @Test
     fun `should not permit inserting duplicate login`() {
         // Given
         val newUser = UserData(null, "someLogin", "pwd", "nick")
-        repository.insertNewUser(newUser)
+        transactionWrapper.executeInTransaction {
+            repository.insertNewUser(newUser, it)
+        }
 
         // Then
-        assertThrows<MongoWriteException> { repository.insertNewUser(newUser)  }
+        assertThrows<MongoWriteException> {
+            transactionWrapper.executeInTransaction {
+                repository.insertNewUser(newUser, it)
+            }
+        }
     }
 }

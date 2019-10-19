@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters
 
+import com.kilchichakov.fiveletters.service.TransactionWrapper
 import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
 import com.mongodb.client.MongoDatabase
@@ -23,6 +24,8 @@ import org.bson.Document
 open class MongoTestSuite {
 
     lateinit var db: MongoDatabase
+
+    lateinit var transactionWrapper: TransactionWrapper
 
     private val initScript = MongoTestSuite::class.java.classLoader.getResource("mongo-init.js").readText()
 
@@ -109,6 +112,7 @@ open class MongoTestSuite {
     @BeforeEach
     open fun setUpEach() {
         Thread.sleep(15000)
+        transactionWrapper = TransactionWrapper(client)
         db = client.getDatabase("test")
         val script = BasicDBObject()
         script["eval"] = initScript

@@ -11,12 +11,17 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
 class UserService : UserDetailsService {
+
+    @Autowired
+    private lateinit var transactionWrapper: TransactionWrapper
+
+    @Autowired
+    private lateinit var passCodeService: PassCodeService
 
     @Autowired
     private lateinit var userDataDataRepository: UserDataRepository
@@ -27,13 +32,18 @@ class UserService : UserDetailsService {
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
-    fun registerNewUser(login: String, password: String, licenceAccepted: Boolean) {
+    fun registerNewUser(login: String, password: String, licenceAccepted: Boolean, code: String?) {
         LOG.info { "registering new user $login" }
         if (!licenceAccepted) throw TermsOfUseException("Licence was not accepted")
         if (!systemStateRepository.read().registrationEnabled) throw SystemStateException("Registration is disabled")
 
         val userData = UserData(null, login, passwordEncoder.encode(password), "")
-        userDataDataRepository.insertNewUser(userData)
+        transactionWrapper.executeInTransaction {
+            val passCode = passCodeService.getPassCode(code!!) //TODO omit passcode based on system state
+            passCodeService.usePassCode(passCode, login, it)
+            userDataDataRepository.insertNewUser(userData, it)
+        }
+
     }
 
     override fun loadUserByUsername(login: String): UserDetails {

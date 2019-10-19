@@ -28,7 +28,8 @@ class RegisterControllerTest : ControllerTestSuite() {
         val login = "lg"
         val pwd = "pw"
         val acceptLicence = true
-        val request = RegisterRequest(login, pwd, acceptLicence, "XXX-YYY-ZZZ")
+        val passCode = "XXX-YYY-ZZZ"
+        val request = RegisterRequest(login, pwd, acceptLicence, passCode)
 
         // When
         val actual = controller.register(request)
@@ -37,7 +38,7 @@ class RegisterControllerTest : ControllerTestSuite() {
         assertThat(actual).isEqualTo(OperationCodeResponse(0))
         verify(exactly = 0) { ControllerUtils.getLogin() }
         verify {
-            userService.registerNewUser(login, pwd, acceptLicence)
+            userService.registerNewUser(login, pwd, acceptLicence, passCode)
         }
         confirmVerified(userService)
     }

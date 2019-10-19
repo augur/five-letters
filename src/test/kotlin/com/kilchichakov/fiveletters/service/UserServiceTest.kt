@@ -2,9 +2,11 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
+import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
+import com.mongodb.client.ClientSession
 import io.mockk.Runs
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -12,6 +14,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -24,6 +27,12 @@ import org.springframework.security.crypto.password.PasswordEncoder
 
 @ExtendWith(MockKExtension::class)
 internal class UserServiceTest {
+
+    @RelaxedMockK
+    lateinit var transactionWrapper: TransactionWrapper
+
+    @RelaxedMockK
+    lateinit var passCodeService: PassCodeService
 
     @RelaxedMockK
     lateinit var userDataRepository: UserDataRepository
@@ -44,31 +53,40 @@ internal class UserServiceTest {
         val password = "pw"
         val slot = slot<UserData>()
         val encoded = "encoded"
+        val code = "xx-yy-zz"
+        val passCode = mockk<OneTimePassCode>()
+        val session = mockk<ClientSession>()
 
+        every { transactionWrapper.executeInTransaction(any()) } answers {
+            firstArg<(ClientSession)->Any>().invoke(session)
+        }
+        every { passCodeService.getPassCode(any()) } returns passCode
         every { systemStateRepository.read().registrationEnabled } returns true
-        every { userDataRepository.insertNewUser(capture(slot)) } just Runs
+        every { userDataRepository.insertNewUser(capture(slot), any()) } just Runs
         every { passwordEncoder.encode(any()) } returns encoded
 
         // When
-        service.registerNewUser(login, password, true)
+        service.registerNewUser(login, password, true, code)
 
         // Then
         assertThat(slot.captured._id).isNull()
         assertThat(slot.captured.login).isEqualTo(login)
         assertThat(slot.captured.password).isEqualTo(encoded)
         verify {
+            passCodeService.getPassCode(code)
             systemStateRepository.read().registrationEnabled
             passwordEncoder.encode(password)
-            userDataRepository.insertNewUser(slot.captured)
+            passCodeService.usePassCode(passCode, login, session)
+            userDataRepository.insertNewUser(slot.captured, session)
         }
-        confirmVerified(systemStateRepository, passwordEncoder, userDataRepository)
+        confirmVerified(systemStateRepository, passwordEncoder, userDataRepository, passCodeService)
     }
 
     @Test
     fun `should fail to register if licence is not accepted`() {
         // When
         assertThrows<TermsOfUseException> {
-            service.registerNewUser("lg", "pw", false)
+            service.registerNewUser("lg", "pw", false, "pscd")
         }
     }
 
@@ -76,7 +94,7 @@ internal class UserServiceTest {
     fun `should fail to register if registration is disabled`() {
         every { systemStateRepository.read().registrationEnabled } returns false
         assertThrows<SystemStateException> {
-            service.registerNewUser("lg", "pw", true)
+            service.registerNewUser("lg", "pw", true, "pscd")
         }
     }
 

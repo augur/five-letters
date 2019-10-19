@@ -32,8 +32,6 @@ internal class PassCodeRepositoryTest : MongoTestSuite() {
 
     private lateinit var collection: MongoCollection<PassCode>
 
-    private lateinit var transactionWrapper: TransactionWrapper
-
     // Sat Sep 14 2019 10:51:49 UTC
     private val instant = Instant.ofEpochMilli(1568458309619)
     private val clock: Clock = Clock.fixed(instant, ZoneId.of("Indian/Maldives"))
@@ -42,7 +40,6 @@ internal class PassCodeRepositoryTest : MongoTestSuite() {
     @BeforeEach
     override fun setUpEach() {
         super.setUpEach()
-        transactionWrapper = TransactionWrapper(client)
         repository = PassCodeRepository(db, clock)
         collection = db.getCollection()
     }
