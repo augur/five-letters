@@ -6,8 +6,6 @@ import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.model.OneTimePassCodeConsumed
 import com.kilchichakov.fiveletters.model.PassCode
-import com.kilchichakov.fiveletters.service.TransactionWrapper
-import com.kilchichakov.fiveletters.util.now
 import com.mongodb.MongoException
 import com.mongodb.client.MongoCollection
 import org.assertj.core.api.Assertions.assertThat
@@ -105,6 +103,34 @@ internal class PassCodeRepositoryTest : MongoTestSuite() {
         assertThat(actual._id).isEqualTo(passCode._id)
         assertThat(actual.date).isEqualTo(Date.from(instant))
         assertThat(actual.login).isEqualTo(login)
+    }
+
+    @Test
+    fun `should fail to update if same login used twice`() {
+        // Given
+        val login = "loupa"
+        val code1 = "oh-wow"
+        val code2 = "hm-mmm"
+        val date = Date()
+        val passCode1 = OneTimePassCode(code1, date)
+        val passCode2 = OneTimePassCode(code2, date)
+        collection.save(passCode1)
+        collection.save(passCode2)
+
+        // When
+        transactionWrapper.executeInTransaction {
+            repository.consumeOneTimePassCode(code1, login, it)
+        }
+        assertThrows<MongoException> {
+            transactionWrapper.executeInTransaction {
+                repository.consumeOneTimePassCode(code2, login, it)
+            }
+        }
+
+        val actual1 = repository.findPassCode(code1)
+        assertThat(actual1).isInstanceOfAny(OneTimePassCodeConsumed::class.java)
+        val actual2 = repository.findPassCode(code2)
+        assertThat(actual2).isInstanceOfAny(OneTimePassCode::class.java)
     }
 
     @Test

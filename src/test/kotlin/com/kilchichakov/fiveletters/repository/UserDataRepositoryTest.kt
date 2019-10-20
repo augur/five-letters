@@ -4,6 +4,7 @@ import com.kilchichakov.fiveletters.MongoTestSuite
 import com.kilchichakov.fiveletters.model.UserData
 import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
+import com.mongodb.MongoException
 import com.mongodb.MongoWriteException
 import de.flapdoodle.embed.mongo.MongodExecutable
 import de.flapdoodle.embed.mongo.MongodStarter
@@ -79,7 +80,7 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         }
 
         // Then
-        assertThrows<MongoWriteException> {
+        assertThrows<MongoException> {
             transactionWrapper.executeInTransaction {
                 repository.insertNewUser(newUser, it)
             }
