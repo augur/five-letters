@@ -2,8 +2,6 @@ package com.kilchichakov.fiveletters.config
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClient
-import com.mongodb.MongoCredential
-import com.mongodb.ServerAddress
 import com.mongodb.client.MongoDatabase
 import org.litote.kmongo.KMongo
 import org.springframework.beans.factory.annotation.Value
@@ -32,7 +30,8 @@ class MongoConfig {
     }
 
     @Bean
-    fun mongoDatabase(client: MongoClient): MongoDatabase {
-        return client.getDatabase("five-letters")
+    fun mongoDatabase(client: MongoClient,
+                      @Value("\${MONGO_DB}") dbName: String): MongoDatabase {
+        return client.getDatabase(dbName)
     }
 }

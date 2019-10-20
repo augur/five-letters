@@ -33,8 +33,9 @@ class PassCodeService(
 
     fun usePassCode(passCode: PassCode, login: String, clientSession: ClientSession) {
         when(passCode) {
-            is OneTimePassCode -> passCodeRepository.consumeOneTimePassCode(passCode._id,login, clientSession)
+            is OneTimePassCode -> return passCodeRepository.consumeOneTimePassCode(passCode._id,login, clientSession)
         }
+        throw DataException("passCode $passCode cannot be used")
     }
 
     private fun generateUUID(): String {

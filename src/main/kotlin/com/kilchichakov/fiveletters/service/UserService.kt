@@ -39,8 +39,11 @@ class UserService : UserDetailsService {
 
         val userData = UserData(null, login, passwordEncoder.encode(password), "")
         transactionWrapper.executeInTransaction {
+            LOG.info { "resolving passcode $code" }
             val passCode = passCodeService.getPassCode(code!!) //TODO omit passcode based on system state
+            LOG.info { "found $passCode, consuming" }
             passCodeService.usePassCode(passCode, login, it)
+            LOG.info { "consumed" }
             userDataDataRepository.insertNewUser(userData, it)
         }
 

@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.model.OneTimePassCode
+import com.kilchichakov.fiveletters.model.OneTimePassCodeConsumed
 import com.kilchichakov.fiveletters.model.PassCode
 import com.kilchichakov.fiveletters.repository.PassCodeRepository
 import com.mongodb.client.ClientSession
@@ -107,5 +108,21 @@ internal class PassCodeServiceTest {
             passCodeRepository.consumeOneTimePassCode(code, login, session)
         }
         confirmVerified(passCodeRepository)
+    }
+
+    @Test
+    fun `should fail to consume consumed passcode`() {
+        // Given
+        val passCode = mockk<OneTimePassCodeConsumed>()
+        val login = "loupa"
+        val session = mockk<ClientSession>()
+        val code = "someCode"
+
+        every { passCode._id } returns code
+
+        // When
+        assertThrows<DataException> {
+            service.usePassCode(passCode, login, session)
+        }
     }
 }
