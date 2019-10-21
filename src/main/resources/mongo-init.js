@@ -16,3 +16,12 @@ db.passCode.createIndex(
     { "login": 1 },
     { unique: true, partialFilterExpression: { "login": { $exists: true } } }
 )
+
+db.timePeriod.createIndex(
+    {
+        "years": 1,
+        "months": 1,
+        "weeks": 1,
+        "days": 1
+    }
+)
