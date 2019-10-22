@@ -3,7 +3,7 @@ package com.kilchichakov.fiveletters.service
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Letter
-import com.kilchichakov.fiveletters.model.LetterPeriodType
+import com.kilchichakov.fiveletters.model.TimePeriod
 import com.kilchichakov.fiveletters.repository.LetterRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -17,7 +17,11 @@ class LetterService {
     @Autowired
     lateinit var letterRepository: LetterRepository
 
-    fun sendLetter(login: String, message: String, period: LetterPeriodType, timezoneOffset: Int) {
+    @Autowired
+    lateinit var timePeriodService: TimePeriodService
+
+    fun sendLetter(login: String, message: String, periodName: String, timezoneOffset: Int) {
+        val period = timePeriodService.getTimePeriod(periodName)
         val letter = Letter(null, login, message, false, Calendar.getInstance().time, calcOpenDate(period, timezoneOffset))
         LOG.info { "sending letter $letter" }
         letterRepository.saveNewLetter(letter)
@@ -36,15 +40,14 @@ class LetterService {
         }
     }
 
-    internal fun calcOpenDate(periodType: LetterPeriodType, timezoneOffset: Int): Date {
+    internal fun calcOpenDate(period: TimePeriod, timezoneOffset: Int): Date {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         //calendar.time = SimpleDateFormat("YYYY-MM-dd").parse("2018-12-31")
-        when(periodType) {
-            LetterPeriodType.WEEK -> calendar.add(Calendar.WEEK_OF_YEAR, 1)
-            LetterPeriodType.MONTH -> calendar.add(Calendar.MONTH, 1)
-            LetterPeriodType.THREE_MONTHS -> calendar.add(Calendar.MONTH, 3)
-            LetterPeriodType.YEAR -> calendar.add(Calendar.YEAR, 1)
-            LetterPeriodType.THREE_YEARS -> calendar.add(Calendar.YEAR, 3)
+        with(period) {
+            calendar.add(Calendar.DAY_OF_YEAR, days)
+            calendar.add(Calendar.WEEK_OF_YEAR, weeks)
+            calendar.add(Calendar.MONTH, months)
+            calendar.add(Calendar.YEAR, years)
         }
         // Setting to midnight
         calendar.set(Calendar.HOUR_OF_DAY, 0)

@@ -3,7 +3,6 @@ package com.kilchichakov.fiveletters.controller
 import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.exception.ErrorCode
 import com.kilchichakov.fiveletters.model.Letter
-import com.kilchichakov.fiveletters.model.LetterPeriodType
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
@@ -39,7 +38,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
     fun `should perform send letter call`() {
         // Given
         val message = "some letter"
-        val period = LetterPeriodType.THREE_MONTHS
+        val period = "THREE_MONTHS"
         val offset = 25
         val request = SendLetterRequest(message, period, offset)
 
