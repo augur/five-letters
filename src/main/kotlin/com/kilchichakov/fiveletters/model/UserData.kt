@@ -7,4 +7,8 @@ data class UserData(
         val login: String,
         val password: String,
         val nickname: String,
-        val admin: Boolean = false)
+        val admin: Boolean = false) {
+    override fun toString(): String {
+        return "UserData(_id=$_id, login='$login', password=********, nickname='$nickname', admin=$admin)"
+    }
+}

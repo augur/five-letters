@@ -5,4 +5,8 @@ data class RegisterRequest(
         val password: String,
         val acceptLicense: Boolean,
         val passCode: String?
-)
+) {
+    override fun toString(): String {
+        return "RegisterRequest(login='$login', password=********, acceptLicense=$acceptLicense, passCode=$passCode)"
+    }
+}
