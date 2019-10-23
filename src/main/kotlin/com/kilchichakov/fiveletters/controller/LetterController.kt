@@ -5,10 +5,12 @@ import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.controller.ControllerUtils.getLogin
 import com.kilchichakov.fiveletters.controller.ControllerUtils.processAndRespondCode
 import com.kilchichakov.fiveletters.model.dto.GetNewLettersResponse
+import com.kilchichakov.fiveletters.model.dto.GetTimePeriodsResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.LetterService
+import com.kilchichakov.fiveletters.service.TimePeriodService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,6 +25,9 @@ class LetterController {
     @Autowired
     lateinit var letterService: LetterService
 
+    @Autowired
+    lateinit var timePeriodService: TimePeriodService
+
     @PostMapping("/send")
     @Logged
     fun send(@RequestBody request: SendLetterRequest): OperationCodeResponse {
@@ -30,6 +35,14 @@ class LetterController {
             LOG.info { "asked to send new letter: $request" }
             letterService.sendLetter(login!!, request.message, request.period, request.timezoneOffset)
         }.also { LOG.info { "result is $it" } }
+    }
+
+    @GetMapping("/periods")
+    @Logged
+    fun getTimePeriods(): GetTimePeriodsResponse {
+        LOG.info { "asked to get available time periods" }
+        return GetTimePeriodsResponse(timePeriodService.listAllTimePeriods())
+                .logResult()
     }
 
     @GetMapping("/new")

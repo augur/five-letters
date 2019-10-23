@@ -7,6 +7,7 @@ import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.LetterService
+import com.kilchichakov.fiveletters.service.TimePeriodService
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -31,6 +32,9 @@ internal class LetterControllerTest : ControllerTestSuite() {
     @RelaxedMockK
     lateinit var letterService: LetterService
 
+    @RelaxedMockK
+    lateinit var timePeriodService: TimePeriodService
+
     @InjectMockKs
     lateinit var controller: LetterController
 
@@ -52,6 +56,22 @@ internal class LetterControllerTest : ControllerTestSuite() {
             letterService.sendLetter(LOGIN, message, period, offset)
         }
         confirmVerified(letterService)
+    }
+
+    @Test
+    fun `should get available time periods`() {
+        // Given
+        val periods = listOf("WEEK", "MONTH")
+
+        every { timePeriodService.listAllTimePeriods() } returns periods
+
+        // When
+        val actual = controller.getTimePeriods()
+
+        // Then
+        assertThat(actual.periods).isEqualTo(periods)
+        verify { timePeriodService.listAllTimePeriods() }
+        confirmVerified(timePeriodService)
     }
 
     @Test
