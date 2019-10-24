@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.TimePeriod
 import com.kilchichakov.fiveletters.repository.LetterRepository
 import io.mockk.Runs
@@ -90,6 +91,22 @@ internal class LetterServiceTest {
         // Then
         assertThat(actual).containsExactly(letter)
         verify { letterRepository.getNewLetters(login) }
+        confirmVerified(letterRepository)
+    }
+
+    @Test
+    fun `should get future letter envelops`() {
+        // Given
+        val login = "loupa"
+        val envelop = mockk<SealedLetterEnvelop>()
+        every { letterRepository.getFutureLetters(any(), any()) } returns listOf(envelop)
+
+        // When
+        val actual = service.getFutureLetters(login)
+
+        // Then
+        assertThat(actual).containsExactly(envelop)
+        verify { letterRepository.getFutureLetters(login, any()) }
         confirmVerified(letterRepository)
     }
 

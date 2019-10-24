@@ -76,6 +76,34 @@ internal class LetterRepositoryTest : MongoTestSuite() {
         assertThat(actual.first()).isEqualToIgnoringGivenFields(expected, "_id")
     }
 
+    @Test
+    fun `should get future letters`() {
+        // Given
+        val sendDate1 = getDateTime("2015-02-16T21:00:00.000+01:00")
+        val sendDate2 = getDateTime("2015-02-17T21:00:00.000+01:00")
+        val sendDate3 = getDateTime("2015-02-18T21:00:00.000+01:00")
+        val sendDate4 = getDateTime("2015-02-19T21:00:00.000+01:00")
+        val sendDate5 = getDateTime("2015-02-20T21:00:00.000+01:00")
+        val login = "username"
+
+        val expectedLast = Letter(null, login, "123", false, sendDate1, Date.from(instant.plusMillis(500)))
+        val expectedFirst = Letter(null, login, "123", false, sendDate2, Date.from(instant.plusMillis(100)))
+        val limitedOut = Letter(null, login, "123", false, sendDate3, Date.from(instant.plusMillis(800)))
+        val anotherUser = Letter(null, "hmmm", "123", false, sendDate4, Date.from(instant.plusMillis(100)))
+        val notInFuture = Letter(null, login, "123", false, sendDate5, Date.from(instant.plusMillis(-100)))
+
+        // When
+        repository.saveNewLetter(expectedLast)
+        repository.saveNewLetter(expectedFirst)
+        repository.saveNewLetter(limitedOut)
+        repository.saveNewLetter(anotherUser)
+        repository.saveNewLetter(notInFuture)
+        val actual = repository.getFutureLetters(login, 2)
+
+        // Then
+        assertThat(actual.map { it.sendDate }.toList()).containsExactly(expectedFirst.sendDate, expectedLast.sendDate)
+    }
+
 
     @Test
     fun `should update letter as read`() {

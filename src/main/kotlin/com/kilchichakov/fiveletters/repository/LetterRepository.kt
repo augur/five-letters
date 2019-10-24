@@ -2,13 +2,16 @@ package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.util.now
 import com.mongodb.client.MongoDatabase
 import org.bson.types.ObjectId
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.getCollection
+import org.litote.kmongo.gt
 import org.litote.kmongo.lte
+import org.litote.kmongo.orderBy
 import org.litote.kmongo.setValue
 import org.springframework.stereotype.Repository
 import java.time.Clock
@@ -33,6 +36,18 @@ class LetterRepository(
         val byIsRead = Letter::read eq false
         val byOpenDate = Letter::openDate lte clock.now()
         val found = collection.find(and(byLogin, byIsRead, byOpenDate))
+        LOG.info { "found ${found.count()} letters" }
+        return found.toList()
+    }
+
+    fun getFutureLetters(login: String, limit: Int): List<SealedLetterEnvelop> {
+        LOG.info { "load future letters of user $login, limit $limit" }
+        val byLogin = Letter::login eq login
+        val byOpenDate = Letter::openDate gt clock.now()
+        val sorted = orderBy(Letter::openDate)
+        val found = collection.find(and(byLogin, byOpenDate), SealedLetterEnvelop::class.java)
+                .sort(sorted)
+                .limit(limit)
         LOG.info { "found ${found.count()} letters" }
         return found.toList()
     }

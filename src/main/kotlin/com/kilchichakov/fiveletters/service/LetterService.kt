@@ -3,6 +3,7 @@ package com.kilchichakov.fiveletters.service
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.TimePeriod
 import com.kilchichakov.fiveletters.repository.LetterRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,6 +32,11 @@ class LetterService {
     fun getNewLetters(login: String): List<Letter> {
         LOG.info { "getting new letters for user $login" }
         return letterRepository.getNewLetters(login)
+    }
+
+    fun getFutureLetters(login: String): List<SealedLetterEnvelop> {
+        LOG.info { "getting future letters for user $login, limit 30" }
+        return letterRepository.getFutureLetters(login, 30)
     }
 
     fun markLetterAsRead(login: String, letterId: String) {

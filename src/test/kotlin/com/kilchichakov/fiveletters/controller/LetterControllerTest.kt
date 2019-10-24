@@ -3,6 +3,7 @@ package com.kilchichakov.fiveletters.controller
 import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.exception.ErrorCode
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
@@ -13,6 +14,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -93,6 +95,26 @@ internal class LetterControllerTest : ControllerTestSuite() {
         verify {
             ControllerUtils.getLogin()
             letterService.getNewLetters(LOGIN)
+        }
+        confirmVerified(letterService)
+    }
+
+    @Test
+    fun `should get future letters`() {
+        // Given
+        val envelop = mockk<SealedLetterEnvelop>()
+
+        every { letterService.getFutureLetters(LOGIN) } returns listOf(envelop)
+
+        // When
+        val actual = controller.getFutureLetters()
+
+        // Then
+        assertThat(actual.letters).containsExactly(envelop)
+
+        verify {
+            ControllerUtils.getLogin()
+            letterService.getFutureLetters(LOGIN)
         }
         confirmVerified(letterService)
     }

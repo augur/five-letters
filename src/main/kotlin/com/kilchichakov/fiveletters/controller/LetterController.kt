@@ -4,6 +4,7 @@ import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.controller.ControllerUtils.getLogin
 import com.kilchichakov.fiveletters.controller.ControllerUtils.processAndRespondCode
+import com.kilchichakov.fiveletters.model.dto.GetFutureLettersResponse
 import com.kilchichakov.fiveletters.model.dto.GetNewLettersResponse
 import com.kilchichakov.fiveletters.model.dto.GetTimePeriodsResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
@@ -51,6 +52,15 @@ class LetterController {
         LOG.info { "asked to get new letters" }
         val letters = letterService.getNewLetters(getLogin()!!)
         return GetNewLettersResponse(letters.map { LetterDto(it._id!!.toHexString(), it.sendDate, it.message) })
+                .logResult()
+    }
+
+    @GetMapping("/future")
+    @Logged
+    fun getFutureLetters(): GetFutureLettersResponse {
+        LOG.info { "asked to get future letters" }
+        val letters = letterService.getFutureLetters(getLogin()!!)
+        return GetFutureLettersResponse(letters)
                 .logResult()
     }
 
