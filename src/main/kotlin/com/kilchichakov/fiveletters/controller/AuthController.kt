@@ -5,6 +5,7 @@ import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.AuthResponse
 import com.kilchichakov.fiveletters.service.AuthService
+import com.kilchichakov.fiveletters.service.InputValidationService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -22,9 +23,13 @@ class AuthController {
     @Autowired
     private lateinit var authService: AuthService
 
+    @Autowired
+    protected lateinit var inputValidationService: InputValidationService
+
     @PostMapping
     @Logged
     fun authenticate(@RequestBody authRequest: AuthRequest): AuthResponse {
+        inputValidationService.validate(authRequest)
         LOG.info { "authentication request, login: ${authRequest.login}" }
         val result = authService.authenticate(authRequest.login, authRequest.password)
         LOG.info { "success" }
