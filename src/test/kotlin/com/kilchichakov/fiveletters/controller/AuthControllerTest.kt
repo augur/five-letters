@@ -51,8 +51,11 @@ internal class AuthControllerTest : ControllerTestSuite() {
 
         // Then
         assertThat(actual).isEqualTo(expected)
-        verify { authService.authenticate(someLogin, somePassword) }
-        confirmVerified(authService)
+        verify {
+            inputValidationService.validate(request)
+            authService.authenticate(someLogin, somePassword)
+        }
+        confirmVerified(inputValidationService, authService)
     }
 
     @Test

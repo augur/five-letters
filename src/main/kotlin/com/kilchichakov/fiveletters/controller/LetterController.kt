@@ -10,6 +10,7 @@ import com.kilchichakov.fiveletters.model.dto.GetTimePeriodsResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
+import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.TimePeriodService
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,10 +30,14 @@ class LetterController {
     @Autowired
     lateinit var timePeriodService: TimePeriodService
 
+    @Autowired
+    protected lateinit var inputValidationService: InputValidationService
+
     @PostMapping("/send")
     @Logged
     fun send(@RequestBody request: SendLetterRequest): OperationCodeResponse {
         return processAndRespondCode { login ->
+            inputValidationService.validate(request)
             LOG.info { "asked to send new letter: $request" }
             letterService.sendLetter(login!!, request.message, request.period, request.timezoneOffset)
         }.also { LOG.info { "result is $it" } }

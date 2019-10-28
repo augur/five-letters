@@ -55,9 +55,10 @@ internal class LetterControllerTest : ControllerTestSuite() {
         assertThat(actual).isEqualTo(OperationCodeResponse(0))
         verify {
             ControllerUtils.getLogin()
+            inputValidationService.validate(request)
             letterService.sendLetter(LOGIN, message, period, offset)
         }
-        confirmVerified(letterService)
+        confirmVerified(inputValidationService, letterService)
     }
 
     @Test

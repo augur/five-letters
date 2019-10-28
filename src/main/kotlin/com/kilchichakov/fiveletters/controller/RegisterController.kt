@@ -5,6 +5,7 @@ import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.controller.ControllerUtils.processAndRespondCode
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
+import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,10 +20,14 @@ class RegisterController {
     @Autowired
     private lateinit var userService: UserService
 
+    @Autowired
+    protected lateinit var inputValidationService: InputValidationService
+
     @PostMapping
     @Logged
     fun register(@RequestBody request: RegisterRequest): OperationCodeResponse {
         return processAndRespondCode(false) {
+            inputValidationService.validate(request)
             LOG.info { "asked to register, ${request.copy(password = "********")}" }
             userService.registerNewUser(request.login, request.password, request.acceptLicense, request.passCode)
         }.logResult()

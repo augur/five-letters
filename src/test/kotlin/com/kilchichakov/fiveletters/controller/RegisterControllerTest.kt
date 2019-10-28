@@ -38,8 +38,9 @@ class RegisterControllerTest : ControllerTestSuite() {
         assertThat(actual).isEqualTo(OperationCodeResponse(0))
         verify(exactly = 0) { ControllerUtils.getLogin() }
         verify {
+            inputValidationService.validate(request)
             userService.registerNewUser(login, pwd, acceptLicence, passCode)
         }
-        confirmVerified(userService)
+        confirmVerified(inputValidationService, userService)
     }
 }
