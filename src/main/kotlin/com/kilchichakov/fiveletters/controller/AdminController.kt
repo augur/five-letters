@@ -3,6 +3,8 @@ package com.kilchichakov.fiveletters.controller
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.model.OneTimePassCode
+import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
+import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
@@ -14,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -29,6 +32,12 @@ class AdminController {
     @Autowired
     lateinit var passCodeService: PassCodeService
 
+    @Autowired
+    lateinit var userService: UserService
+
+    @Autowired
+    lateinit var inputValidationService: InputValidationService
+
     @PostMapping("/registration")
     @Logged
     fun switchRegistration(@RequestParam enabled: Boolean) {
@@ -43,5 +52,14 @@ class AdminController {
         ControllerUtils.getLogin()
         LOG.info { "asked to generate one-time passcode with seconds valid = $seconds" }
         return passCodeService.generateOneTimePassCode(seconds)
+    }
+
+    @PostMapping("/users/password/change")
+    @Logged
+    fun changeUserPassword(@RequestBody request: AdminChangePasswordRequest) {
+        ControllerUtils.getLogin()
+        inputValidationService.validate(request)
+        LOG.info { "asked to change password for user ${request.login}" }
+        userService.changeUserPassword(request.login, request.password)
     }
 }

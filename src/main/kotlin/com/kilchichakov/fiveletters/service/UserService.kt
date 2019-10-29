@@ -1,6 +1,7 @@
 package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
 import com.kilchichakov.fiveletters.model.UserData
@@ -24,7 +25,7 @@ class UserService : UserDetailsService {
     private lateinit var passCodeService: PassCodeService
 
     @Autowired
-    private lateinit var userDataDataRepository: UserDataRepository
+    private lateinit var userDataRepository: UserDataRepository
 
     @Autowired
     private lateinit var systemStateRepository: SystemStateRepository
@@ -44,15 +45,21 @@ class UserService : UserDetailsService {
             LOG.info { "found $passCode, consuming" }
             passCodeService.usePassCode(passCode, login, it)
             LOG.info { "consumed" }
-            userDataDataRepository.insertNewUser(userData, it)
+            userDataRepository.insertNewUser(userData, it)
         }
 
     }
 
     override fun loadUserByUsername(login: String): UserDetails {
         LOG.info { "loading by login $login" }
-        val data = userDataDataRepository.loadUserData(login)!!
+        val data = userDataRepository.loadUserData(login)!!
         val authorities = if (data.admin) listOf(SimpleGrantedAuthority("ROLE_ADMIN")) else emptyList()
         return User(data.login, data.password, authorities)
+    }
+
+    fun changeUserPassword(login: String, rawPassword: String) {
+        LOG.info { "changing password of $login" }
+        val encoded = passwordEncoder.encode(rawPassword)
+        if (!userDataRepository.changePassword(login, encoded)) throw DatabaseException("Unexpected update result during changing user $login password")
     }
 }

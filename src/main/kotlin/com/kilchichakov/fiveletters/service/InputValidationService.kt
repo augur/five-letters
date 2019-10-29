@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DataException
+import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
@@ -15,6 +16,7 @@ class InputValidationService {
             is SendLetterRequest -> doValidate(input)
             is AuthRequest -> doValidate(input)
             is RegisterRequest -> doValidate(input)
+            is AdminChangePasswordRequest -> doValidate(input)
             else -> LOG.warn { "no validation rules for $input" }
         }
     }
@@ -31,6 +33,13 @@ class InputValidationService {
         validation(authRequest) {
             checkLogin(authRequest.login)
             checkPassword(authRequest.password)
+        }
+    }
+
+    private fun doValidate(request: AdminChangePasswordRequest) {
+        validation(request) {
+            checkLogin(request.login)
+            checkPassword(request.password)
         }
     }
 

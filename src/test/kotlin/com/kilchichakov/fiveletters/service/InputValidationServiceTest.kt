@@ -1,6 +1,7 @@
 package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.invokePrivate
+import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
@@ -51,6 +52,23 @@ internal class InputValidationServiceTest {
 
         // When
         spy.validate(AuthRequest(login, pwd))
+
+        // Then
+        verify { spy["checkLogin"](any<ValidationResult>(), login) }
+        verify { spy["checkPassword"](any<ValidationResult>(), pwd) }
+    }
+
+    @Test
+    fun `should validate admin change password request`() {
+        // Given
+        val login = "loupa"
+        val pwd = "poupa"
+        val spy = spyk(service, recordPrivateCalls = true)
+        every { spy["checkLogin"](any<ValidationResult>(), any<String>()) } returns 0
+        every { spy["checkPassword"](any<ValidationResult>(), any<String>()) } returns 0
+
+        // When
+        spy.validate(AdminChangePasswordRequest(login, pwd))
 
         // Then
         verify { spy["checkLogin"](any<ValidationResult>(), login) }

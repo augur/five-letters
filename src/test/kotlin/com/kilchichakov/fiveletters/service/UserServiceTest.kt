@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
 import com.kilchichakov.fiveletters.model.OneTimePassCode
@@ -138,5 +139,47 @@ internal class UserServiceTest {
             userDataRepository.loadUserData(login)
         }
         confirmVerified(userDataRepository)
+    }
+
+    @Test
+    fun `should change user password with success`() {
+        // Given
+        val login = "someLogin"
+        val newPwd = "another pwd"
+        val encoded = "0xF0F0"
+        every { passwordEncoder.encode(any()) } returns encoded
+        every { userDataRepository.changePassword(any(), any()) } returns true
+
+        // When
+        service.changeUserPassword(login, newPwd)
+
+        // Then
+        verify {
+            passwordEncoder.encode(newPwd)
+            userDataRepository.changePassword(login, encoded)
+        }
+        confirmVerified(passwordEncoder, userDataRepository)
+    }
+
+    @Test
+    fun `should change user password with failure`() {
+        // Given
+        val login = "someLogin"
+        val newPwd = "another pwd"
+        val encoded = "0xF0F0"
+        every { passwordEncoder.encode(any()) } returns encoded
+        every { userDataRepository.changePassword(any(), any()) } returns false
+
+        // When
+        assertThrows<DatabaseException> {
+            service.changeUserPassword(login, newPwd)
+        }
+
+        // Then
+        verify {
+            passwordEncoder.encode(newPwd)
+            userDataRepository.changePassword(login, encoded)
+        }
+        confirmVerified(passwordEncoder, userDataRepository)
     }
 }

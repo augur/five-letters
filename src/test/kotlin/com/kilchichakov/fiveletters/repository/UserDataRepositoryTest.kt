@@ -86,4 +86,25 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
             }
         }
     }
+
+    @Test
+    fun `should change password of user`() {
+        // Given
+        val login = "someLogin"
+        val oldPwd = "some old pwd"
+        val newPwd = "new password"
+        val newUser = UserData(null, login, oldPwd, "nick")
+        transactionWrapper.executeInTransaction {
+            repository.insertNewUser(newUser, it)
+        }
+
+        // When
+        val actual = repository.changePassword(login, newPwd)
+        val updated = repository.loadUserData(login)!!
+
+        // Then
+        assertThat(actual).isTrue()
+        assertThat(updated.password).isEqualTo(newPwd)
+        assertThat(updated).isEqualToIgnoringGivenFields(newUser, "password", "_id")
+    }
 }
