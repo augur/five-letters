@@ -12,6 +12,8 @@ db.letter.createIndex(
 
 db.createCollection('systemState', { capped: true, size: 65536, max: 1 } )
 
+// === 0.2 ===
+
 db.passCode.createIndex(
     { "login": 1 },
     { unique: true, partialFilterExpression: { "login": { $exists: true } } }

@@ -1,5 +1,7 @@
 //db = db.getSiblingDB('five-letters')
 
+// == 0.2 ==
+
 db.timePeriod.save(
      {
          _id: "DAY",
