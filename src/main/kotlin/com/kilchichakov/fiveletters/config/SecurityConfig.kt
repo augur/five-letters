@@ -56,7 +56,7 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
                 .httpBasic().disable()
                 .cors()
                 .and().csrf().disable()
-                .authorizeRequests().antMatchers("/auth", "/register").permitAll()
+                .authorizeRequests().antMatchers("/auth", "/register", "/common/**").permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 

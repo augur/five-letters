@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "com.kilchichakov"
-version = "0.2.0-SNAPSHOT"
+version = "0.3.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -57,6 +57,13 @@ tasks.withType<KotlinCompile> {
 	}
 }
 
+
+configure<ProcessResources>("processResources") {
+	filesMatching("application.properties") {
+		expand(project.properties)
+	}
+}
+
 publishing {
 	repositories {
 		maven {
@@ -73,4 +80,8 @@ publishing {
 			from(components["java"])
 		}
 	}
+}
+
+inline fun <reified C> Project.configure(name: String, configuration: C.() -> Unit) {
+	(this.tasks.getByName(name) as C).configuration()
 }
