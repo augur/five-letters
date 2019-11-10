@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "com.kilchichakov"
-version = "0.3.0-SNAPSHOT"
+version = "19.11.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
