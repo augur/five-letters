@@ -24,7 +24,7 @@ class AuthDataRepository(
     }
 
     fun loadUserData(login: String): AuthData? {
-        LOG.info { "loading userData of $login" }
+        LOG.info { "loading authData of $login" }
         return collection.findOne(AuthData::login eq login).also {
             LOG.info { "found userData $it" }
         }
