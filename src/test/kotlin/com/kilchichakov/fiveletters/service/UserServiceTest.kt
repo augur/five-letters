@@ -4,9 +4,9 @@ import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
 import com.kilchichakov.fiveletters.model.OneTimePassCode
-import com.kilchichakov.fiveletters.model.UserData
+import com.kilchichakov.fiveletters.model.AuthData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
-import com.kilchichakov.fiveletters.repository.UserDataRepository
+import com.kilchichakov.fiveletters.repository.AuthDataRepository
 import com.mongodb.client.ClientSession
 import io.mockk.Runs
 import io.mockk.confirmVerified
@@ -36,7 +36,7 @@ internal class UserServiceTest {
     lateinit var passCodeService: PassCodeService
 
     @RelaxedMockK
-    lateinit var userDataRepository: UserDataRepository
+    lateinit var authDataRepository: AuthDataRepository
 
     @RelaxedMockK
     lateinit var systemStateRepository: SystemStateRepository
@@ -52,7 +52,7 @@ internal class UserServiceTest {
         // Given
         val login = "loupa"
         val password = "pw"
-        val slot = slot<UserData>()
+        val slot = slot<AuthData>()
         val encoded = "encoded"
         val code = "xx-yy-zz"
         val passCode = mockk<OneTimePassCode>()
@@ -63,7 +63,7 @@ internal class UserServiceTest {
         }
         every { passCodeService.getPassCode(any()) } returns passCode
         every { systemStateRepository.read().registrationEnabled } returns true
-        every { userDataRepository.insertNewUser(capture(slot), any()) } just Runs
+        every { authDataRepository.insertNewUser(capture(slot), any()) } just Runs
         every { passwordEncoder.encode(any()) } returns encoded
 
         // When
@@ -78,9 +78,9 @@ internal class UserServiceTest {
             systemStateRepository.read().registrationEnabled
             passwordEncoder.encode(password)
             passCodeService.usePassCode(passCode, login, session)
-            userDataRepository.insertNewUser(slot.captured, session)
+            authDataRepository.insertNewUser(slot.captured, session)
         }
-        confirmVerified(systemStateRepository, passwordEncoder, userDataRepository, passCodeService)
+        confirmVerified(systemStateRepository, passwordEncoder, authDataRepository, passCodeService)
     }
 
     @Test
@@ -104,8 +104,8 @@ internal class UserServiceTest {
         // Given
         val login = "poupa"
         val password = "encoded"
-        val userData = UserData(null, login, password, "", false)
-        every { userDataRepository.loadUserData(any()) } returns userData
+        val userData = AuthData(null, login, password, false)
+        every { authDataRepository.loadUserData(any()) } returns userData
 
         // When
         val actual = service.loadUserByUsername(login)
@@ -115,9 +115,9 @@ internal class UserServiceTest {
         assertThat(actual.authorities).isEmpty()
         assertThat(actual.password).isEqualTo(password)
         verify {
-            userDataRepository.loadUserData(login)
+            authDataRepository.loadUserData(login)
         }
-        confirmVerified(userDataRepository)
+        confirmVerified(authDataRepository)
     }
 
     @Test
@@ -125,8 +125,8 @@ internal class UserServiceTest {
         // Given
         val login = "loupa"
         val password = "encoded"
-        val userData = UserData(null, login, password, "", true)
-        every { userDataRepository.loadUserData(any()) } returns userData
+        val userData = AuthData(null, login, password, true)
+        every { authDataRepository.loadUserData(any()) } returns userData
 
         // When
         val actual = service.loadUserByUsername(login)
@@ -136,9 +136,9 @@ internal class UserServiceTest {
         assertThat(actual.authorities).containsExactly(SimpleGrantedAuthority("ROLE_ADMIN"))
         assertThat(actual.password).isEqualTo(password)
         verify {
-            userDataRepository.loadUserData(login)
+            authDataRepository.loadUserData(login)
         }
-        confirmVerified(userDataRepository)
+        confirmVerified(authDataRepository)
     }
 
     @Test
@@ -148,7 +148,7 @@ internal class UserServiceTest {
         val newPwd = "another pwd"
         val encoded = "0xF0F0"
         every { passwordEncoder.encode(any()) } returns encoded
-        every { userDataRepository.changePassword(any(), any()) } returns true
+        every { authDataRepository.changePassword(any(), any()) } returns true
 
         // When
         service.changeUserPassword(login, newPwd)
@@ -156,9 +156,9 @@ internal class UserServiceTest {
         // Then
         verify {
             passwordEncoder.encode(newPwd)
-            userDataRepository.changePassword(login, encoded)
+            authDataRepository.changePassword(login, encoded)
         }
-        confirmVerified(passwordEncoder, userDataRepository)
+        confirmVerified(passwordEncoder, authDataRepository)
     }
 
     @Test
@@ -168,7 +168,7 @@ internal class UserServiceTest {
         val newPwd = "another pwd"
         val encoded = "0xF0F0"
         every { passwordEncoder.encode(any()) } returns encoded
-        every { userDataRepository.changePassword(any(), any()) } returns false
+        every { authDataRepository.changePassword(any(), any()) } returns false
 
         // When
         assertThrows<DatabaseException> {
@@ -178,8 +178,8 @@ internal class UserServiceTest {
         // Then
         verify {
             passwordEncoder.encode(newPwd)
-            userDataRepository.changePassword(login, encoded)
+            authDataRepository.changePassword(login, encoded)
         }
-        confirmVerified(passwordEncoder, userDataRepository)
+        confirmVerified(passwordEncoder, authDataRepository)
     }
 }

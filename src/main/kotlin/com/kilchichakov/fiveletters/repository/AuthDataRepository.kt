@@ -1,8 +1,7 @@
 package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.LOG
-import com.kilchichakov.fiveletters.model.Letter
-import com.kilchichakov.fiveletters.model.UserData
+import com.kilchichakov.fiveletters.model.AuthData
 import com.mongodb.client.ClientSession
 import com.mongodb.client.MongoDatabase
 import org.litote.kmongo.eq
@@ -12,29 +11,29 @@ import org.litote.kmongo.setValue
 import org.springframework.stereotype.Repository
 
 @Repository
-class UserDataRepository(
+class AuthDataRepository(
         db: MongoDatabase
 ) {
 
-    private val collection = db.getCollection<UserData>()
+    private val collection = db.getCollection<AuthData>("userData")
 
-    fun insertNewUser(userData: UserData, clientSession: ClientSession) {
-        LOG.info { "inserting user $userData" }
-        collection.insertOne(clientSession, userData)
+    fun insertNewUser(authData: AuthData, clientSession: ClientSession) {
+        LOG.info { "inserting authData $authData" }
+        collection.insertOne(clientSession, authData)
         LOG.info { "inserted" }
     }
 
-    fun loadUserData(login: String): UserData? {
+    fun loadUserData(login: String): AuthData? {
         LOG.info { "loading userData of $login" }
-        return collection.findOne(UserData::login eq login).also {
+        return collection.findOne(AuthData::login eq login).also {
             LOG.info { "found userData $it" }
         }
     }
 
     fun changePassword(login: String, encodedPassword: String): Boolean {
         LOG.info { "updating password of $login" }
-        val byLogin = UserData::login eq login
-        val update = setValue(UserData::password, encodedPassword)
+        val byLogin = AuthData::login eq login
+        val update = setValue(AuthData::password, encodedPassword)
         val result = collection.updateOne(byLogin, update)
         LOG.info { "updated ${result.modifiedCount} users" }
         return result.modifiedCount == 1L;

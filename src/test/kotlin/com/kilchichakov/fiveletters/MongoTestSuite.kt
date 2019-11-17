@@ -30,6 +30,7 @@ open class MongoTestSuite {
     private val initScript = MongoTestSuite::class.java.classLoader.getResource("mongo-init.js").readText()
 
     companion object {
+        var replicaSetReady = false
 
         private var node1MongodExe: MongodExecutable? = null
         private var node1Mongod: MongodProcess? = null
@@ -45,6 +46,8 @@ open class MongoTestSuite {
         fun setUp() {
             val starter = MongodStarter.getDefaultInstance()
 
+            replicaSetReady = false
+
             val bindIp = "localhost"
 
             val node1Port = 12345
@@ -55,32 +58,43 @@ open class MongoTestSuite {
 //                    .version(Version.Main.PRODUCTION)
 //                    .net(Net(bindIp, port, Network.localhostIsIPv6()))
 //                    .build()
+            val thread1 = Thread {
+                node1MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
+                        .withLaunchArgument("--replSet", "rs0")
+                        .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
+                        .net(Net(bindIp, node1Port, Network.localhostIsIPv6()))
+                        .build())
 
-            node1MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
-                    .withLaunchArgument("--replSet", "rs0")
-                    .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
-                    .net(Net(bindIp, node1Port, Network.localhostIsIPv6()))
-                    .build())
+                node1Mongod = node1MongodExe?.start()
+            }
 
-            node1Mongod = node1MongodExe?.start()
+            val thread2 = Thread {
+                node2MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
+                        .withLaunchArgument("--replSet", "rs0")
+                        .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
+                        .net(Net(bindIp, node2Port, Network.localhostIsIPv6()))
+                        .build())
+                node2Mongod = node2MongodExe?.start()
+            }
 
-            node2MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
-                    .withLaunchArgument("--replSet", "rs0")
-                    .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
-                    .net(Net(bindIp, node2Port, Network.localhostIsIPv6()))
-                    .build())
-            node2Mongod = node2MongodExe?.start()
+            val thread3 = Thread {
+                node3MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
+                        .withLaunchArgument("--replSet", "rs0")
+                        .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
+                        .net(Net(bindIp, node3Port, Network.localhostIsIPv6()))
+                        .build())
+                node3Mongod = node3MongodExe?.start()
+            }
 
-            node3MongodExe = starter.prepare(MongodConfigBuilder().version(Version.Main.V4_0)
-                    .withLaunchArgument("--replSet", "rs0")
-                    .cmdOptions(MongoCmdOptionsBuilder().useNoJournal(false).build())
-                    .net(Net(bindIp, node3Port, Network.localhostIsIPv6()))
-                    .build())
-            node3Mongod = node3MongodExe?.start()
+            thread1.start()
+            thread2.start()
+            thread3.start()
 
+            thread1.join()
+            thread2.join()
+            thread3.join()
 
             client = KMongo.createClient(bindIp, node1Port)
-
 
             val adminDatabase = client.getDatabase("admin")
 
@@ -111,7 +125,10 @@ open class MongoTestSuite {
 
     @BeforeEach
     open fun setUpEach() {
-        Thread.sleep(15000)
+        if (!replicaSetReady) {
+            Thread.sleep(15000)
+            replicaSetReady = true
+        }
         transactionWrapper = TransactionWrapper(client)
         db = client.getDatabase("test")
         val script = BasicDBObject()

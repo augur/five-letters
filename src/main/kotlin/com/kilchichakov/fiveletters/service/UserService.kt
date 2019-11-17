@@ -4,9 +4,9 @@ import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
-import com.kilchichakov.fiveletters.model.UserData
+import com.kilchichakov.fiveletters.model.AuthData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
-import com.kilchichakov.fiveletters.repository.UserDataRepository
+import com.kilchichakov.fiveletters.repository.AuthDataRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
@@ -25,7 +25,7 @@ class UserService : UserDetailsService {
     private lateinit var passCodeService: PassCodeService
 
     @Autowired
-    private lateinit var userDataRepository: UserDataRepository
+    private lateinit var authDataRepository: AuthDataRepository
 
     @Autowired
     private lateinit var systemStateRepository: SystemStateRepository
@@ -38,21 +38,21 @@ class UserService : UserDetailsService {
         if (!licenceAccepted) throw TermsOfUseException("Licence was not accepted")
         if (!systemStateRepository.read().registrationEnabled) throw SystemStateException("Registration is disabled")
 
-        val userData = UserData(null, login, passwordEncoder.encode(password), "")
+        val userData = AuthData(null, login, passwordEncoder.encode(password))
         transactionWrapper.executeInTransaction {
             LOG.info { "resolving passcode $code" }
             val passCode = passCodeService.getPassCode(code!!) //TODO omit passcode based on system state
             LOG.info { "found $passCode, consuming" }
             passCodeService.usePassCode(passCode, login, it)
             LOG.info { "consumed" }
-            userDataRepository.insertNewUser(userData, it)
+            authDataRepository.insertNewUser(userData, it)
         }
 
     }
 
     override fun loadUserByUsername(login: String): UserDetails {
         LOG.info { "loading by login $login" }
-        val data = userDataRepository.loadUserData(login)!!
+        val data = authDataRepository.loadUserData(login)!!
         val authorities = if (data.admin) listOf(SimpleGrantedAuthority("ROLE_ADMIN")) else emptyList()
         return User(data.login, data.password, authorities)
     }
@@ -60,6 +60,6 @@ class UserService : UserDetailsService {
     fun changeUserPassword(login: String, rawPassword: String) {
         LOG.info { "changing password of $login" }
         val encoded = passwordEncoder.encode(rawPassword)
-        if (!userDataRepository.changePassword(login, encoded)) throw DatabaseException("Unexpected update result during changing user $login password")
+        if (!authDataRepository.changePassword(login, encoded)) throw DatabaseException("Unexpected update result during changing user $login password")
     }
 }

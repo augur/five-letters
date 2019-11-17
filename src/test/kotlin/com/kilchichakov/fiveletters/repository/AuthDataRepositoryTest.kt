@@ -1,43 +1,30 @@
 package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.MongoTestSuite
-import com.kilchichakov.fiveletters.model.UserData
-import com.mongodb.BasicDBObject
-import com.mongodb.MongoClient
+import com.kilchichakov.fiveletters.model.AuthData
 import com.mongodb.MongoException
-import com.mongodb.MongoWriteException
-import de.flapdoodle.embed.mongo.MongodExecutable
-import de.flapdoodle.embed.mongo.MongodStarter
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder
-import de.flapdoodle.embed.mongo.config.Net
-import de.flapdoodle.embed.mongo.distribution.Version
-import de.flapdoodle.embed.process.runtime.Network
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.litote.kmongo.KMongo
 import java.lang.RuntimeException
 
 
-internal class UserDataRepositoryTest : MongoTestSuite() {
+internal class AuthDataRepositoryTest : MongoTestSuite() {
 
-    private lateinit var repository: UserDataRepository
+    private lateinit var repository: AuthDataRepository
 
     @BeforeEach
     override fun setUpEach() {
         super.setUpEach()
-        repository = UserDataRepository(db)
+        repository = AuthDataRepository(db)
     }
 
     @Test
     fun `should insert and load users`() {
         // Given
         val login = "someLogin"
-        val newUser = UserData(null, login, "pwd", "nick")
+        val newUser = AuthData(null, login, "pwd")
 
         // When
         val before = repository.loadUserData(login)
@@ -56,7 +43,7 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
     fun `should not insert due to external error`() {
         // Given
         val login = "someLogin"
-        val newUser = UserData(null, login, "pwd", "nick")
+        val newUser = AuthData(null, login, "pwd")
 
         // When
         assertThrows<RuntimeException> {
@@ -74,7 +61,7 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
     @Test
     fun `should not permit inserting duplicate login`() {
         // Given
-        val newUser = UserData(null, "someLogin", "pwd", "nick")
+        val newUser = AuthData(null, "someLogin", "pwd")
         transactionWrapper.executeInTransaction {
             repository.insertNewUser(newUser, it)
         }
@@ -93,7 +80,7 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         val login = "someLogin"
         val oldPwd = "some old pwd"
         val newPwd = "new password"
-        val newUser = UserData(null, login, oldPwd, "nick")
+        val newUser = AuthData(null, login, oldPwd)
         transactionWrapper.executeInTransaction {
             repository.insertNewUser(newUser, it)
         }
