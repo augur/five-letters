@@ -1,12 +1,15 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
 import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.model.AuthData
+import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.AuthDataRepository
+import com.kilchichakov.fiveletters.repository.UserDataRepository
 import com.mongodb.client.ClientSession
 import io.mockk.Runs
 import io.mockk.confirmVerified
@@ -43,6 +46,9 @@ internal class UserServiceTest {
 
     @RelaxedMockK
     lateinit var passwordEncoder: PasswordEncoder
+
+    @RelaxedMockK
+    lateinit var userDataRepository: UserDataRepository
 
     @InjectMockKs
     lateinit var service: UserService
@@ -181,5 +187,31 @@ internal class UserServiceTest {
             authDataRepository.changePassword(login, encoded)
         }
         confirmVerified(passwordEncoder, authDataRepository)
+    }
+
+    @Test
+    fun `should load user data`() {
+        // Given
+        val login = "someLogin"
+        val userData = mockk<UserData>()
+        every { userDataRepository.loadUserData(any()) } returns userData
+
+        // When
+        val actual = service.loadUserData(login)
+
+        // Then
+        assertThat(actual).isEqualTo(userData)
+        verify { userDataRepository.loadUserData(login) }
+        confirmVerified(userDataRepository)
+    }
+
+    @Test
+    fun `should throw if userData not found`() {
+        // Given
+        val login = "someLogin"
+        every { userDataRepository.loadUserData(any()) } returns null
+
+        // When
+        assertThrows<DataException> { service.loadUserData(login) }
     }
 }

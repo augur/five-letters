@@ -57,23 +57,4 @@ internal class AuthControllerTest : ControllerTestSuite() {
         }
         confirmVerified(inputValidationService, authService)
     }
-
-    @Test
-    fun `should retrieve login from security context`() {
-        // Given
-        val someName = "someName"
-        mockkStatic(SecurityContextHolder::class)
-        val token = mockk<UsernamePasswordAuthenticationToken> {
-            every { name } returns someName
-        }
-        every { SecurityContextHolder.getContext().authentication } returns token
-
-        // When
-        val actual = authController.whoAmI()
-
-        // Then
-        assertThat(actual).isEqualTo("hello, $someName")
-        verify { SecurityContextHolder.getContext().authentication }
-        confirmVerified(SecurityContextHolder::class.java)
-    }
 }

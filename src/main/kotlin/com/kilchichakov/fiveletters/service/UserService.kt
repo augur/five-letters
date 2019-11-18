@@ -1,12 +1,15 @@
 package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
 import com.kilchichakov.fiveletters.model.AuthData
+import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.AuthDataRepository
+import com.kilchichakov.fiveletters.repository.UserDataRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
@@ -33,6 +36,9 @@ class UserService : UserDetailsService {
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
 
+    @Autowired
+    private lateinit var userDataRepository: UserDataRepository
+
     fun registerNewUser(login: String, password: String, licenceAccepted: Boolean, code: String?) {
         LOG.info { "registering new user $login" }
         if (!licenceAccepted) throw TermsOfUseException("Licence was not accepted")
@@ -51,7 +57,7 @@ class UserService : UserDetailsService {
     }
 
     override fun loadUserByUsername(login: String): UserDetails {
-        LOG.info { "loading by login $login" }
+        LOG.info { "loading UserDetails by login $login" }
         val data = authDataRepository.loadUserData(login)!!
         val authorities = if (data.admin) listOf(SimpleGrantedAuthority("ROLE_ADMIN")) else emptyList()
         return User(data.login, data.password, authorities)
@@ -61,5 +67,10 @@ class UserService : UserDetailsService {
         LOG.info { "changing password of $login" }
         val encoded = passwordEncoder.encode(rawPassword)
         if (!authDataRepository.changePassword(login, encoded)) throw DatabaseException("Unexpected update result during changing user $login password")
+    }
+
+    fun loadUserData(login: String): UserData {
+        LOG.info { "loading UserData by login $login" }
+        return userDataRepository.loadUserData(login) ?: throw DataException("not found UserData of $login")
     }
 }

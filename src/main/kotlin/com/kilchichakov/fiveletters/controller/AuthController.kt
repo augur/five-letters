@@ -2,10 +2,12 @@ package com.kilchichakov.fiveletters.controller
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
+import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.AuthResponse
 import com.kilchichakov.fiveletters.service.AuthService
 import com.kilchichakov.fiveletters.service.InputValidationService
+import com.kilchichakov.fiveletters.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -36,11 +38,4 @@ class AuthController {
         return result.logResult()
     }
 
-    @GetMapping("/whoami")
-    @Logged
-    fun whoAmI(): String {
-        LOG.info { "asked whoami" }
-        val auth = SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken
-        return "hello, ${auth.name}".logResult()
-    }
 }
