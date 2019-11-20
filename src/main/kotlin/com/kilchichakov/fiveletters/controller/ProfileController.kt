@@ -11,6 +11,7 @@ import com.kilchichakov.fiveletters.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -21,7 +22,7 @@ class ProfileController {
     @Autowired
     private lateinit var userService: UserService
 
-    @GetMapping("/whoami")
+    @GetMapping
     @Logged
     fun whoAmI(): WhoAmIResponse {
         val login = getLogin()!!
@@ -33,7 +34,7 @@ class ProfileController {
 
     @PostMapping
     @Logged
-    fun updateProfile(request: UpdateProfileRequest): OperationCodeResponse {
+    fun updateProfile(@RequestBody request: UpdateProfileRequest): OperationCodeResponse {
         return processAndRespondCode {
             LOG.info { "asked to update userData - $request" }
             userService.updateUserData(it!!, request.email, request.nickname)
