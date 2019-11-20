@@ -214,4 +214,32 @@ internal class UserServiceTest {
         // When
         assertThrows<DataException> { service.loadUserData(login) }
     }
+
+    @Test
+    fun `should update userData`() {
+        // Given
+        val login = "loupa"
+        val nick = "poupa"
+        val email = "loupa@poupa"
+        every { userDataRepository.updateUserData(any(), any(), any()) } returns true
+
+        // When
+        service.updateUserData(login, email, nick)
+
+        // Then
+        verify { userDataRepository.updateUserData(login, email, nick) }
+        confirmVerified(userDataRepository)
+    }
+
+    @Test
+    fun `should throw if not updated profile`() {
+        // Given
+        val login = "loupa"
+        val nick = "poupa"
+        val email = "loupa@poupa"
+        every { userDataRepository.updateUserData(any(), any(), any()) } returns false
+
+        // When
+        assertThrows<DatabaseException> { service.updateUserData(login, email, nick) }
+    }
 }

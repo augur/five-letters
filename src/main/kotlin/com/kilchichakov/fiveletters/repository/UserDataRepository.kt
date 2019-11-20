@@ -37,7 +37,7 @@ class UserDataRepository(
         update = and(update, setValue(UserData::nickname, nickname))
         val result = collection.updateOne(byLogin, update)
         LOG.info { "updated ${result.modifiedCount} users" }
-        return result.modifiedCount == 1L;
+        return result.modifiedCount == 1L
     }
 
 }

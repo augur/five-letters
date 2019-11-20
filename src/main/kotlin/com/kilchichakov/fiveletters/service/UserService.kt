@@ -73,4 +73,9 @@ class UserService : UserDetailsService {
         LOG.info { "loading UserData by login $login" }
         return userDataRepository.loadUserData(login) ?: throw DataException("not found UserData of $login")
     }
+
+    fun updateUserData(login: String, email: String, nickname: String) {
+        LOG.info { "updating userData of $login - $email, $nickname" }
+        if (!userDataRepository.updateUserData(login, email, nickname)) throw DatabaseException("Unexpected update result during changing user $login userData")
+    }
 }
