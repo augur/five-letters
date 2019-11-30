@@ -84,7 +84,6 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
     fun `should fail if not found`() {
         // Given
         val login = "someLogin"
-        val nick = "nick"
         val email = "nick@com"
         val newNickname = "loupa"
 

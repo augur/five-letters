@@ -199,8 +199,6 @@ internal class PassCodeRepositoryTest : MongoTestSuite() {
         // Given
         val login = "loupa"
         val code = "oh-wow"
-        val date = Date()
-        val passCode = OneTimePassCode(code, date)
 
         // When
         assertThrows<DatabaseException> {
