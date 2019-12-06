@@ -7,4 +7,5 @@ data class UserData(
         val login: String,
         val nickname: String?,
         val email: String?,
-        val emailConfirmed: Boolean = false)
+        val emailConfirmed: Boolean = false,
+        val emailConfirmationCode: String? = null)
