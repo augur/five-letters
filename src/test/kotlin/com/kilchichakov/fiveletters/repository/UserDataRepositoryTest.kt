@@ -90,4 +90,45 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         // Then
         assertThrows<DatabaseException> { repository.updateUserData(login, email, newNickname) }
     }
+
+    @Test
+    fun `should set confirmation code`() {
+        // Given
+        val login = "loupa"
+        val code = "poupa"
+        val userData = UserData(null, login, "sdfs", "email", true, null)
+        collection.save(userData)
+
+        // When
+        val actual = repository.setEmailConfirmationCode(login, code)
+        val updated = repository.loadUserData(login) ?: throw Exception()
+
+        // Then
+        assertThat(actual).isTrue()
+        assertThat(updated.emailConfirmed).isFalse()
+        assertThat(updated.emailConfirmationCode).isEqualTo(code)
+        assertThat(updated).isEqualToIgnoringGivenFields(userData, "emailConfirmed", "emailConfirmationCode")
+    }
+
+    @Test
+    fun `should confirm an email`() {
+        // Given
+        val code = "code"
+        val login = "loupa"
+        val userData1 = UserData(null, login, "sdfs", "email", false, code)
+        val userData2 = UserData(null, "other", "sdfs", "email", false, "other")
+        collection.save(userData1)
+        collection.save(userData2)
+
+        // When
+        val actual = repository.setEmailConfirmed(code)
+        val updated = repository.loadUserData(login) ?: throw Exception()
+        val untouched = repository.loadUserData("other") ?: throw Exception()
+
+        // Then
+        assertThat(actual).isTrue()
+        assertThat(updated.emailConfirmed).isTrue()
+        assertThat(updated).isEqualToIgnoringGivenFields(userData1, "emailConfirmed", "emailConfirmationCode")
+        assertThat(untouched).isEqualTo(userData2)
+    }
 }

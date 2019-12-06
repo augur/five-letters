@@ -40,4 +40,24 @@ class UserDataRepository(
         return result.modifiedCount == 1L
     }
 
+    fun setEmailConfirmationCode(login: String, code: String): Boolean {
+        LOG.info { "setting email code for $login to $code" }
+        val byLogin = UserData::login eq login
+        val update = and(setValue(UserData::emailConfirmed, false),
+                setValue(UserData::emailConfirmationCode, code))
+        val result = collection.updateOne(byLogin, update)
+        LOG.info { "updated ${result.modifiedCount} users" }
+        return result.modifiedCount == 1L
+    }
+
+    fun setEmailConfirmed(code: String): Boolean {
+        val nullCode: String? = null
+        LOG.info { "setting email confirmed for $code" }
+        val byEmailCode = UserData::emailConfirmationCode eq code
+        val update = and(setValue(UserData::emailConfirmed, true),
+                setValue(UserData::emailConfirmationCode, nullCode))
+        val result = collection.updateOne(byEmailCode, update)
+        LOG.info { "updated ${result.modifiedCount} users" }
+        return result.modifiedCount == 1L
+    }
 }
