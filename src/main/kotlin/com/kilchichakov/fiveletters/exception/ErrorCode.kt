@@ -6,5 +6,6 @@ enum class ErrorCode(val numeric: Int) {
     STATE(2000),
     TOU(3000),
     DATA(4000),
+    EXTERNAL_SRV(5000),
     GENERIC_ERROR(9000)
 }

@@ -13,3 +13,5 @@ class SystemStateException(message: String, cause: Throwable? = null) : BackendE
 class TermsOfUseException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.TOU, message, cause)
 
 class DataException(message: String, cause: Throwable? = null) : BackendException(ErrorCode.DATA, message, cause)
+
+class ExternalServiceException(message: String, cause: Throwable?) : BackendException(ErrorCode.EXTERNAL_SRV, message, cause)

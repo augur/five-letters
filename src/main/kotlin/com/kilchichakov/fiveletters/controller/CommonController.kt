@@ -3,7 +3,6 @@ package com.kilchichakov.fiveletters.controller
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.service.EmailService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
