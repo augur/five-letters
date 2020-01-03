@@ -27,3 +27,12 @@ db.timePeriod.createIndex(
         "days": 1
     }
 )
+
+// === 20.01.1 ===
+
+db.job.createIndex(
+    {
+        "status": 1,
+        "schedule.nextExecutionTime": 1
+    }
+)
