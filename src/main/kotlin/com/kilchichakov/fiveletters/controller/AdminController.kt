@@ -7,8 +7,10 @@ import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobSchedule
+import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.service.InputValidationService
+import com.kilchichakov.fiveletters.service.JobService
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
@@ -69,16 +71,14 @@ class AdminController {
     }
 
     @Autowired
-    private lateinit var jobRepository: JobRepository
+    private lateinit var jobService: JobService
 
     @GetMapping("/test1")
     @Logged
     fun runTest() {
         LOG.info { "running test1" }
-        val job = Job(null, JobSchedule(nextExecutionTime = Date()), EmailConfirmSendingJobPayload("emalll"))
+        val job = Job(null, JobSchedule(nextExecutionTime = Date()), TestJobPayload("emalll"))
 
-        jobRepository.insertJob(job)
-
-        LOG.info { jobRepository.loadReadyJobs() }
+        jobService.scheduleEmailConfirmation("root")
     }
 }

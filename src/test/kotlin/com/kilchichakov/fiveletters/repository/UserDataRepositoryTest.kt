@@ -100,7 +100,10 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         collection.save(userData)
 
         // When
-        val actual = repository.setEmailConfirmationCode(login, code)
+        var actual = false
+        transactionWrapper.executeInTransaction {
+            actual = repository.setEmailConfirmationCode(login, code, it)
+        }
         val updated = repository.loadUserData(login) ?: throw Exception()
 
         // Then

@@ -5,6 +5,7 @@ import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobSchedule
 import com.kilchichakov.fiveletters.model.job.JobStatus
 import com.kilchichakov.fiveletters.util.now
+import com.mongodb.client.ClientSession
 import com.mongodb.client.MongoDatabase
 import org.bson.types.ObjectId
 import org.litote.kmongo.and
@@ -25,9 +26,9 @@ class JobRepository(
     private val collection = db.getCollection<Job>()
 
 
-    fun insertJob(job: Job) {
+    fun insertJob(job: Job, clientSession: ClientSession) {
         LOG.info { "inserting new job $job" }
-        collection.insertOne(job)
+        collection.insertOne(clientSession, job)
         LOG.info { "saved" }
     }
 

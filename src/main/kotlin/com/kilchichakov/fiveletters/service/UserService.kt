@@ -10,6 +10,7 @@ import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.AuthDataRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
+import com.mongodb.client.ClientSession
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.User
@@ -77,5 +78,11 @@ class UserService : UserDetailsService {
     fun updateUserData(login: String, email: String, nickname: String) {
         LOG.info { "updating userData of $login - $email, $nickname" }
         if (!userDataRepository.updateUserData(login, email, nickname)) throw DatabaseException("Unexpected update result during changing user $login userData")
+    }
+
+    fun setConfirmationCode(login: String, code: String, clientSession: ClientSession) {
+        LOG.info { "setting confirmation code of $login to $code" }
+        if (!userDataRepository.setEmailConfirmationCode(login, code, clientSession))
+            throw DatabaseException("Unexpected update result during setting user $login confirmation code")
     }
 }

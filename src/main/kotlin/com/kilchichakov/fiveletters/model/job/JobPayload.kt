@@ -14,4 +14,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 sealed class JobPayload
 
 data class TestJobPayload(val data: String): JobPayload()
-data class EmailConfirmSendingJobPayload(val email: String): JobPayload()
+data class EmailConfirmSendingJobPayload(val email: String,
+                                         val code: String): JobPayload()

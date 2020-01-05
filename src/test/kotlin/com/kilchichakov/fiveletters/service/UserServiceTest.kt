@@ -242,4 +242,32 @@ internal class UserServiceTest {
         // When
         assertThrows<DatabaseException> { service.updateUserData(login, email, nick) }
     }
+
+    @Test
+    fun `should set confirmation code`() {
+        // Given
+        val login = "loupa"
+        val code = "poupa"
+        val session = mockk<ClientSession>()
+        every { userDataRepository.setEmailConfirmationCode(any(), any(), any()) } returns true
+
+        // When
+        service.setConfirmationCode(login, code, session)
+
+        // Then
+        verify { userDataRepository.setEmailConfirmationCode(login, code, session) }
+        confirmVerified(userDataRepository)
+    }
+
+    @Test
+    fun `should throw if not set confirmation code`() {
+        // Given
+        val login = "loupa"
+        val code = "poupa"
+        val session = mockk<ClientSession>()
+        every { userDataRepository.setEmailConfirmationCode(any(), any(), any()) } returns false
+
+        // When
+        assertThrows<DatabaseException> { service.setConfirmationCode(login, code, session) }
+    }
 }

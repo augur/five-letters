@@ -46,7 +46,9 @@ class JobRepositoryTest : MongoTestSuite() {
         val job = Job(null, schedule, payload)
 
         // When
-        repository.insertJob(job)
+        transactionWrapper.executeInTransaction {
+            repository.insertJob(job, it)
+        }
 
         // Then
         val found = collection.findOne()!!
@@ -63,11 +65,13 @@ class JobRepositoryTest : MongoTestSuite() {
         val active = Job(ObjectId(), JobSchedule(next), TestJobPayload("foo"), JobStatus.ACTIVE)
         val future = Job(ObjectId(), JobSchedule(Date.from(instant.plusMillis(100))), TestJobPayload("bar"), JobStatus.ACTIVE)
         val past = Job(ObjectId(), JobSchedule(Date.from(instant.minusMillis(100))), TestJobPayload("baz"), JobStatus.ACTIVE)
-        repository.insertJob(failed)
-        repository.insertJob(done)
-        repository.insertJob(active)
-        repository.insertJob(future)
-        repository.insertJob(past)
+        transactionWrapper.executeInTransaction {
+            repository.insertJob(failed, it)
+            repository.insertJob(done, it)
+            repository.insertJob(active, it)
+            repository.insertJob(future, it)
+            repository.insertJob(past, it)
+        }
 
         // When
         val actual = repository.loadReadyJobs()
@@ -85,7 +89,9 @@ class JobRepositoryTest : MongoTestSuite() {
         val schedule = JobSchedule(next)
         val status = JobStatus.ACTIVE
         val job = Job(id, schedule, payload, status)
-        repository.insertJob(job)
+        transactionWrapper.executeInTransaction {
+            repository.insertJob(job, it)
+        }
         val newStatus = JobStatus.DONE
         val newSchedule = JobSchedule(Date.from(instant.plusMillis(100500)))
 

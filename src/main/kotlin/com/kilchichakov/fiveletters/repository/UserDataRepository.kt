@@ -3,6 +3,7 @@ package com.kilchichakov.fiveletters.repository
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.UserData
+import com.mongodb.client.ClientSession
 import com.mongodb.client.MongoDatabase
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
@@ -40,12 +41,12 @@ class UserDataRepository(
         return result.modifiedCount == 1L
     }
 
-    fun setEmailConfirmationCode(login: String, code: String): Boolean {
+    fun setEmailConfirmationCode(login: String, code: String, clientSession: ClientSession): Boolean {
         LOG.info { "setting email code for $login to $code" }
         val byLogin = UserData::login eq login
         val update = and(setValue(UserData::emailConfirmed, false),
                 setValue(UserData::emailConfirmationCode, code))
-        val result = collection.updateOne(byLogin, update)
+        val result = collection.updateOne(clientSession, byLogin, update)
         LOG.info { "updated ${result.modifiedCount} users" }
         return result.modifiedCount == 1L
     }
