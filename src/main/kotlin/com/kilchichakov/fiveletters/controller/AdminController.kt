@@ -7,6 +7,7 @@ import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobSchedule
+import com.kilchichakov.fiveletters.model.job.RepeatMode
 import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.service.InputValidationService
@@ -77,7 +78,7 @@ class AdminController {
     @Logged
     fun runTest() {
         LOG.info { "running test1" }
-        val job = Job(null, JobSchedule(nextExecutionTime = Date()), TestJobPayload("emalll"))
+        val job = Job(null, JobSchedule(Date(), RepeatMode.ON_FAIL, 60000L), TestJobPayload("emalll"))
 
         jobService.scheduleEmailConfirmation("root")
     }

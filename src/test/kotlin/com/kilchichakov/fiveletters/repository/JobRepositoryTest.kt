@@ -5,6 +5,7 @@ import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobSchedule
 import com.kilchichakov.fiveletters.model.job.JobStatus
+import com.kilchichakov.fiveletters.model.job.RepeatMode
 import com.mongodb.client.MongoCollection
 import io.mockk.junit5.MockKExtension
 import org.assertj.core.api.Assertions.assertThat
@@ -42,7 +43,7 @@ class JobRepositoryTest : MongoTestSuite() {
         // Given
         val next = Date.from(instant)
         val payload = TestJobPayload("loupa")
-        val schedule = JobSchedule(next)
+        val schedule = basicSchedule(next)
         val job = Job(null, schedule, payload)
 
         // When
@@ -60,11 +61,11 @@ class JobRepositoryTest : MongoTestSuite() {
     fun `should get jobs ready to execute`() {
         // Given
         val next = Date.from(instant)
-        val failed = Job(ObjectId(), JobSchedule(next), TestJobPayload("loupa"), JobStatus.FAILED)
-        val done = Job(ObjectId(), JobSchedule(next), TestJobPayload("poupa"), JobStatus.DONE)
-        val active = Job(ObjectId(), JobSchedule(next), TestJobPayload("foo"), JobStatus.ACTIVE)
-        val future = Job(ObjectId(), JobSchedule(Date.from(instant.plusMillis(100))), TestJobPayload("bar"), JobStatus.ACTIVE)
-        val past = Job(ObjectId(), JobSchedule(Date.from(instant.minusMillis(100))), TestJobPayload("baz"), JobStatus.ACTIVE)
+        val failed = Job(ObjectId(), basicSchedule(next), TestJobPayload("loupa"), JobStatus.FAILED)
+        val done = Job(ObjectId(), basicSchedule(next), TestJobPayload("poupa"), JobStatus.DONE)
+        val active = Job(ObjectId(), basicSchedule(next), TestJobPayload("foo"), JobStatus.ACTIVE)
+        val future = Job(ObjectId(), basicSchedule(Date.from(instant.plusMillis(100))), TestJobPayload("bar"), JobStatus.ACTIVE)
+        val past = Job(ObjectId(), basicSchedule(Date.from(instant.minusMillis(100))), TestJobPayload("baz"), JobStatus.ACTIVE)
         transactionWrapper.executeInTransaction {
             repository.insertJob(failed, it)
             repository.insertJob(done, it)
@@ -86,14 +87,14 @@ class JobRepositoryTest : MongoTestSuite() {
         val id = ObjectId()
         val next = Date.from(instant)
         val payload = TestJobPayload("loupa")
-        val schedule = JobSchedule(next)
+        val schedule = basicSchedule(next)
         val status = JobStatus.ACTIVE
         val job = Job(id, schedule, payload, status)
         transactionWrapper.executeInTransaction {
             repository.insertJob(job, it)
         }
         val newStatus = JobStatus.DONE
-        val newSchedule = JobSchedule(Date.from(instant.plusMillis(100500)))
+        val newSchedule = basicSchedule(Date.from(instant.plusMillis(100500)))
 
         // When
         val actual = repository.setJobStatus(id, newStatus, newSchedule)
@@ -105,4 +106,6 @@ class JobRepositoryTest : MongoTestSuite() {
         assertThat(found.schedule).isEqualTo(newSchedule)
         assertThat(found.payload).isEqualTo(payload)
     }
+
+    private fun basicSchedule(next: Date) = JobSchedule(next, RepeatMode.NEVER, 0)
 }
