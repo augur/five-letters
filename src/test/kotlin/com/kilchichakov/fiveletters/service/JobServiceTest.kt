@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.invokePrivate
 import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
@@ -9,7 +10,9 @@ import com.kilchichakov.fiveletters.model.job.JobStatus
 import com.kilchichakov.fiveletters.model.job.RepeatMode
 import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
+import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
 import com.mongodb.client.ClientSession
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
@@ -46,6 +49,9 @@ internal class JobServiceTest {
 
     @RelaxedMockK
     lateinit var clock: Clock
+
+    @RelaxedMockK
+    lateinit var emailConfirmJobProcessor: EmailConfirmJobProcessor
 
     @InjectMockKs
     lateinit var service: JobService
@@ -90,6 +96,20 @@ internal class JobServiceTest {
         assertThat(payload.code).isEqualTo(code)
 
         verify { userDataService.setConfirmationCode(login, code, session) }
+    }
+
+    @Test
+    fun `should get ready jobs`() {
+        val job1 = mockk<Job>()
+        val job2 = mockk<Job>()
+        val jobs = listOf(job1, job2)
+        every { jobRepository.loadReadyJobs() } returns jobs
+        // When
+        val actual = service.getReadyJobs()
+        // Then
+        assertThat(actual).containsExactly(job1, job2)
+        verify { jobRepository.loadReadyJobs() }
+        confirmVerified(jobRepository)
     }
 
     @Test
@@ -212,5 +232,43 @@ internal class JobServiceTest {
             spy["executePayload"](payload)
             jobRepository.setJobStatus(id, JobStatus.FAILED, schedule)
         }
+    }
+
+    @Test
+    fun `should execute with payload - success`() {
+        // Given
+        val payload = TestJobPayload("loupa")
+
+        // When
+        val actual = service.invokePrivate("executePayload", payload)
+
+        // Then
+        assertThat(actual).isEqualTo(true)
+    }
+
+    @Test
+    fun `should execute with improper payload - failure`() {
+        // Given
+        val payload = TestJobPayload("")
+
+        // When
+        val actual = service.invokePrivate("executePayload", payload)
+
+        // Then
+        assertThat(actual).isEqualTo(false)
+    }
+
+    @Test
+    fun `should execute with EmailConfirmSendJob payload`() {
+        // Given
+        val payload = EmailConfirmSendingJobPayload("loupa@mail.io", "poupa")
+
+        // When
+        val actual = service.invokePrivate("executePayload", payload)
+
+        // Then
+        assertThat(actual).isEqualTo(true)
+        verify { emailConfirmJobProcessor.process(payload) }
+        confirmVerified(emailConfirmJobProcessor)
     }
 }

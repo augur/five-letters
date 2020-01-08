@@ -1,14 +1,17 @@
 package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobPayload
 import com.kilchichakov.fiveletters.model.job.JobSchedule
 import com.kilchichakov.fiveletters.model.job.JobStatus
 import com.kilchichakov.fiveletters.model.job.RepeatMode
+import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
+import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
 import com.kilchichakov.fiveletters.util.now
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -33,6 +36,9 @@ class JobService {
     @Autowired
     private lateinit var transactionWrapper: TransactionWrapper
 
+    @Autowired
+    private lateinit var emailConfirmProcessor: EmailConfirmJobProcessor
+
     fun scheduleEmailConfirmation(login: String) {
         LOG.info { "scheduling email confirmation for $login" }
 
@@ -48,6 +54,10 @@ class JobService {
         }
 
         LOG.info { "scheduled" }
+    }
+
+    fun getReadyJobs(): List<Job> {
+        return jobRepository.loadReadyJobs()
     }
 
     fun serve(job: Job) {
@@ -88,7 +98,22 @@ class JobService {
 
 
     private fun executePayload(payload: JobPayload): Boolean {
-        return Date() > Date()
+        return try {
+            when(payload) {
+                is TestJobPayload -> {
+                    LOG.info { "payload type: TestJobPayload" }
+                    if (payload.data.isEmpty()) throw DataException("TestPayload data is empty")
+                }
+                is EmailConfirmSendingJobPayload -> {
+                    LOG.info { "payload type: EmailConfirmSendingJobPayload" }
+                    emailConfirmProcessor.process(payload)
+                }
+            }
+            true
+        } catch (e: Exception) {
+            LOG.error { "caught $e" }
+            false
+        }
     }
 
     private fun generateUUID(): String {

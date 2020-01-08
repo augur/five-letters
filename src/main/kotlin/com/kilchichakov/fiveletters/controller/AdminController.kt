@@ -78,8 +78,9 @@ class AdminController {
     @Logged
     fun runTest() {
         LOG.info { "running test1" }
-        val job = Job(null, JobSchedule(Date(), RepeatMode.ON_FAIL, 60000L), TestJobPayload("emalll"))
 
         jobService.scheduleEmailConfirmation("root")
+        val jobs = jobService.getReadyJobs()
+        jobService.serve(jobs.first())
     }
 }

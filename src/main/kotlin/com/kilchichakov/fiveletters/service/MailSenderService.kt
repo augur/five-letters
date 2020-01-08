@@ -29,7 +29,8 @@ class MailSenderService {
                 "from" to mailProperties.fromAddress,
                 "to" to email.to,
                 "subject" to email.subject,
-                "text" to email.text
+                "text" to email.text,
+                "html" to email.html
         ))
 
         LOG.info { "built uri: $uri" }
@@ -43,10 +44,10 @@ class MailSenderService {
         }
     }
 
-    private fun createUri(url: String, params: Map<String, String>): URI {
+    private fun createUri(url: String, params: Map<String, String?>): URI {
         val builder = UriComponentsBuilder.fromUriString(url)
         params.forEach { (name, value) ->
-            builder.queryParam(name, value)
+            if (value != null) builder.queryParam(name, value)
         }
         return builder.build().toUri()
     }
