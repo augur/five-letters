@@ -11,6 +11,7 @@ import org.bson.types.ObjectId
 import org.litote.kmongo.and
 import org.litote.kmongo.div
 import org.litote.kmongo.eq
+import org.litote.kmongo.findOneById
 import org.litote.kmongo.getCollection
 import org.litote.kmongo.lte
 import org.litote.kmongo.setValue
@@ -32,13 +33,19 @@ class JobRepository(
         LOG.info { "saved" }
     }
 
-    fun loadReadyJobs(): List<Job> {
-        LOG.info { "load ready to execute jobs" }
+    fun loadJob(id: ObjectId): Job? {
+        LOG.info { "loading job by id $id" }
+        return collection.findOneById(id)
+                .also { LOG.info { "found $it" }  }
+    }
+
+    fun loadReadyJobs(): List<ObjectId> {
+        LOG.debug { "load ready to execute jobs" }
         val byStatus = Job::status eq JobStatus.ACTIVE
         val byNextTime = Job::schedule / JobSchedule::nextExecutionTime lte clock.now()
         val found = collection.find(and(byStatus, byNextTime))
-        LOG.info { "found ${found.count()} ready jobs" }
-        return found.toList().sortedBy { it.schedule.nextExecutionTime }
+        LOG.debug { "found ${found.count()} ready jobs" }
+        return found.toList().sortedBy { it.schedule.nextExecutionTime }.map { it._id!! }
     }
 
     fun setJobStatus(id: ObjectId, status: JobStatus, schedule: JobSchedule): Boolean {

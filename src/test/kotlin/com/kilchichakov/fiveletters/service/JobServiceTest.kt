@@ -99,9 +99,27 @@ internal class JobServiceTest {
     }
 
     @Test
+    fun `should get job by id`() {
+        // Given
+        val id = mockk<ObjectId>()
+        val expected = mockk<Job>()
+        every { jobRepository.loadJob(any()) } returns expected
+
+        // When
+        val actual = service.getJob(id)
+
+        // Then
+        assertThat(actual).isEqualTo(expected)
+        verify {
+            jobRepository.loadJob(id)
+        }
+        confirmVerified(jobRepository)
+    }
+
+    @Test
     fun `should get ready jobs`() {
-        val job1 = mockk<Job>()
-        val job2 = mockk<Job>()
+        val job1 = mockk<ObjectId>()
+        val job2 = mockk<ObjectId>()
         val jobs = listOf(job1, job2)
         every { jobRepository.loadReadyJobs() } returns jobs
         // When

@@ -13,6 +13,15 @@ class InMemoryLockService : LockService {
 
     val locks = ConcurrentHashMap<Long, ReentrantLock>()
 
+    override fun tryLock(obj: Any): com.kilchichakov.fiveletters.model.Lock? {
+        val id = obj.hashCode().toLong()
+        val lock = locks.computeIfAbsent(id) { ReentrantLock() }
+        if (lock.tryLock()) {
+            return InMemoryLock(id, Instant.MAX)
+        }
+        return null
+    }
+
     override fun lock(obj: Any): MyLock {
         val id = obj.hashCode().toLong()
         val lock = locks.computeIfAbsent(id) { ReentrantLock() }

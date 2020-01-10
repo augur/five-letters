@@ -1,7 +1,9 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.model.Lock
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.junit5.MockKExtension
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -35,5 +37,22 @@ internal class InMemoryLockServiceTest {
                 .forEach { it.join() }
 
         assert(results.stream().allMatch { it == true })
+    }
+
+    @Test
+    fun `should try locking`() {
+        // Given
+        val entity = "loupa"
+
+        // When
+        val lock1: Lock? = service.tryLock(entity)
+        var lock2: Lock? = null
+        thread {
+            lock2 = service.tryLock(entity)
+        }.join()
+
+        // Then
+        assertThat(lock1).isNotNull
+        assertThat(lock2).isNull()
     }
 }

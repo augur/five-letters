@@ -80,7 +80,7 @@ class AdminController {
         LOG.info { "running test1" }
 
         jobService.scheduleEmailConfirmation("root")
-        val jobs = jobService.getReadyJobs()
-        jobService.serve(jobs.first())
+        //val jobs = jobService.getReadyJobs()
+        //jobService.serve(jobs.first())
     }
 }

@@ -76,9 +76,10 @@ class JobRepositoryTest : MongoTestSuite() {
 
         // When
         val actual = repository.loadReadyJobs()
+        val jobs = actual.map { repository.loadJob(it) }
 
         // Then
-        assertThat(actual).containsExactly(past, active)
+        assertThat(jobs).containsExactly(past, active)
     }
 
     @Test

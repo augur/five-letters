@@ -13,6 +13,7 @@ import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
 import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
 import com.kilchichakov.fiveletters.util.now
+import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.Clock
@@ -56,7 +57,11 @@ class JobService {
         LOG.info { "scheduled" }
     }
 
-    fun getReadyJobs(): List<Job> {
+    fun getJob(id: ObjectId): Job? {
+        return jobRepository.loadJob(id)
+    }
+
+    fun getReadyJobs(): List<ObjectId> {
         return jobRepository.loadReadyJobs()
     }
 
