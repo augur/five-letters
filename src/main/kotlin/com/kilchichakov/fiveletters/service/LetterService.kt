@@ -51,6 +51,13 @@ class LetterService {
         }
     }
 
+    fun markLettersAsMailed(letterIds: List<String>) {
+        LOG.info { "marking letters with ids $letterIds as mail sent" }
+        if (!letterRepository.markLettersAsMailed(letterIds)) {
+            throw DatabaseException("Unexpected update result during markLettersAsMailed()")
+        }
+    }
+
     internal fun calcOpenDate(period: TimePeriod, timezoneOffset: Int): Date {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         //calendar.time = SimpleDateFormat("YYYY-MM-dd").parse("2018-12-31")

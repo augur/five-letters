@@ -157,6 +157,35 @@ internal class LetterServiceTest {
     }
 
     @Test
+    fun `should successfully mark letters as mail sent`() {
+        // Given
+        val id = "someId"
+        every { letterRepository.markLettersAsMailed(any()) } returns true
+
+        // When
+        assertDoesNotThrow { service.markLettersAsMailed(listOf(id)) }
+
+        // Then
+        verify { letterRepository.markLettersAsMailed(listOf(id)) }
+        confirmVerified(letterRepository)
+    }
+
+    @Test
+    fun `should throw on unsuccessful mark letters as mail sent`() {
+        // Given
+        val id = "someId"
+        every { letterRepository.markLettersAsMailed(any()) } returns false
+
+        // When
+        assertThrows<DatabaseException> { service.markLettersAsMailed(listOf(id))  }
+
+
+        // Then
+        verify { letterRepository.markLettersAsMailed(listOf(id)) }
+        confirmVerified(letterRepository)
+    }
+
+    @Test
     fun `should calc open date correctly`() {
         // Given
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))

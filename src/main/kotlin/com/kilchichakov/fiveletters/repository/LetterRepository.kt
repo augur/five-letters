@@ -70,4 +70,19 @@ class LetterRepository(
         LOG.info { "updated ${result.modifiedCount} letters" }
         return result.modifiedCount == 1L
     }
+
+    fun markLettersAsMailed(ids: List<String>): Boolean {
+        LOG.info { "updating letters with ids $ids as mail sent"}
+        var success = true
+        for (id in ids) {
+            val byId = Letter::_id eq ObjectId(id)
+            val update = setValue(Letter::mailSent, true)
+            LOG.info { "updating letter id: $id" }
+            val result = collection.updateOne(byId, update)
+            LOG.info { "updated count: ${result.modifiedCount}" }
+            success = success && result.modifiedCount == 1L
+        }
+
+        return success
+    }
 }

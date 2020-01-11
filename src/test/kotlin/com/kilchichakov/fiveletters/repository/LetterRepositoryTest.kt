@@ -147,6 +147,24 @@ internal class LetterRepositoryTest : MongoTestSuite() {
         assertThat(found).isEqualToIgnoringGivenFields(letter, "read")
     }
 
+    @Test
+    fun `should update letters as mail sent`() {
+        // Given
+        val sendDate = getDateTime("2015-02-16T21:00:00.000+01:00")
+
+        val letter = Letter(ObjectId(), "ldd", "123", false, sendDate, Date.from(instant))
+        val id = letter._id.toString()
+
+        // When
+        repository.saveNewLetter(letter)
+        val actual = repository.markLettersAsMailed(listOf(id))
+
+        // Then
+        val found = collection.findOneById(letter._id!!) ?: throw Exception()
+        assertThat(actual).isTrue()
+        assertThat(found.mailSent).isEqualTo(true)
+        assertThat(found).isEqualToIgnoringGivenFields(letter, "mailSent")
+    }
 
     private fun getDateTime(s: String): Date {
         val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
