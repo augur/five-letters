@@ -40,6 +40,15 @@ class LetterRepository(
         return found.toList()
     }
 
+    fun getLettersForMailing(): List<Letter> {
+        LOG.info { "load letters of user mail sending" }
+        val byIsRead = Letter::read eq false
+        val byIsMailed = Letter::mailSent eq false
+        val byOpenDate = Letter::openDate lte clock.now()
+        val found = collection.find(and(byIsMailed, byIsRead, byOpenDate))
+        LOG.info { "found ${found.count()} letters" }
+        return found.toList()    }
+
     fun getFutureLetters(login: String, limit: Int): List<SealedLetterEnvelop> {
         LOG.info { "load future letters of user $login, limit $limit" }
         val byLogin = Letter::login eq login
@@ -61,5 +70,4 @@ class LetterRepository(
         LOG.info { "updated ${result.modifiedCount} letters" }
         return result.modifiedCount == 1L
     }
-
 }

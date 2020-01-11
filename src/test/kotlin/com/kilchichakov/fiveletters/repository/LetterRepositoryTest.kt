@@ -77,6 +77,29 @@ internal class LetterRepositoryTest : MongoTestSuite() {
     }
 
     @Test
+    fun `should filter letters ready for mailing`() {
+        // Given
+        val sendDate = getDateTime("2015-02-16T21:00:00.000+01:00")
+
+        val expected = Letter(ObjectId(), "ldd", "123", false, sendDate, Date.from(instant))
+        val tooEarly = Letter(ObjectId(), "3243", "456", false, sendDate, Date.from(instant.plusMillis(1)))
+        val alreadyRead = Letter(ObjectId(), "fg", "789", true, sendDate, Date.from(instant))
+        val alreadyMailed = Letter(ObjectId(), "3243", "789", false, sendDate, Date.from(instant), true)
+
+        // When
+        repository.run {
+            saveNewLetter(expected)
+            saveNewLetter(tooEarly)
+            saveNewLetter(alreadyRead)
+            saveNewLetter(alreadyMailed)
+        }
+        val actual = repository.getLettersForMailing()
+
+        // Then
+        assertThat(actual).containsExactly(expected)
+    }
+
+    @Test
     fun `should get future letters`() {
         // Given
         val sendDate1 = getDateTime("2015-02-16T21:00:00.000+01:00")

@@ -36,3 +36,12 @@ db.job.createIndex(
         "schedule.nextExecutionTime": 1
     }
 )
+
+db.letter.createIndex(
+    {
+        "mailSent": 1,
+        "read": 1,
+        "openDate": 1
+    },
+    { unique: false }
+)

@@ -95,6 +95,21 @@ internal class LetterServiceTest {
     }
 
     @Test
+    fun `should get letters for mail sending`() {
+        // Given
+        val letter = mockk<Letter>()
+        every { letterRepository.getLettersForMailing() } returns listOf(letter)
+
+        // When
+        val actual = service.getLettersForMailing()
+
+        // Then
+        assertThat(actual).containsExactly(letter)
+        verify { letterRepository.getLettersForMailing() }
+        confirmVerified(letterRepository)
+    }
+
+    @Test
     fun `should get future letter envelops`() {
         // Given
         val login = "loupa"

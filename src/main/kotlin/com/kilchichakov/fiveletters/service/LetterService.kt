@@ -34,6 +34,11 @@ class LetterService {
         return letterRepository.getNewLetters(login)
     }
 
+    fun getLettersForMailing(): List<Letter> {
+        LOG.info { "getting new letters for mail sending" }
+        return letterRepository.getLettersForMailing()
+    }
+
     fun getFutureLetters(login: String): List<SealedLetterEnvelop> {
         LOG.info { "getting future letters for user $login, limit 30" }
         return letterRepository.getFutureLetters(login, 30)
