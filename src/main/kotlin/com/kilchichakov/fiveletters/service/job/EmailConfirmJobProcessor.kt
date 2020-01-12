@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class EmailConfirmJobProcessor(
-        @Value("\${BASE_URL}")
+        @Value("\${API_URL}")
         private val baseUrl: String,
         @Autowired
         private val mailSenderService: MailSenderService

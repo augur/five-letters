@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DataException
+import com.kilchichakov.fiveletters.model.job.DailyMailingJobPayload
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobPayload
@@ -11,6 +12,7 @@ import com.kilchichakov.fiveletters.model.job.RepeatMode
 import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
+import com.kilchichakov.fiveletters.service.job.DailyMailingJobProcessor
 import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
 import com.kilchichakov.fiveletters.util.now
 import org.bson.types.ObjectId
@@ -39,6 +41,9 @@ class JobService {
 
     @Autowired
     private lateinit var emailConfirmProcessor: EmailConfirmJobProcessor
+
+    @Autowired
+    private lateinit var dailyMailingJobProcessor: DailyMailingJobProcessor
 
     fun scheduleEmailConfirmation(login: String) {
         LOG.info { "scheduling email confirmation for $login" }
@@ -112,6 +117,10 @@ class JobService {
                 is EmailConfirmSendingJobPayload -> {
                     LOG.info { "payload type: EmailConfirmSendingJobPayload" }
                     emailConfirmProcessor.process(payload)
+                }
+                is DailyMailingJobPayload -> {
+                    LOG.info { "payload type: DailyMailingJobPayload" }
+                    dailyMailingJobProcessor.process(payload)
                 }
             }
             true

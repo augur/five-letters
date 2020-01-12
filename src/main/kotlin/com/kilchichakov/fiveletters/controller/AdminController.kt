@@ -4,6 +4,7 @@ import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
+import com.kilchichakov.fiveletters.model.job.DailyMailingJobPayload
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobSchedule
@@ -15,6 +16,7 @@ import com.kilchichakov.fiveletters.service.JobService
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
+import com.kilchichakov.fiveletters.service.TransactionWrapper
 import com.kilchichakov.fiveletters.service.UserService
 import com.mongodb.client.MongoDatabase
 import org.springframework.beans.factory.annotation.Autowired
@@ -74,12 +76,21 @@ class AdminController {
     @Autowired
     private lateinit var jobService: JobService
 
+    @Autowired
+    private lateinit var jobRepository: JobRepository
+
+    @Autowired
+    private lateinit var transactionWrapper: TransactionWrapper
+
     @GetMapping("/test1")
     @Logged
     fun runTest() {
         LOG.info { "running test1" }
 
-        jobService.scheduleEmailConfirmation("root")
+        val job = Job(null, JobSchedule(Date(), RepeatMode.NEVER, 0), DailyMailingJobPayload(""))
+        transactionWrapper.executeInTransaction { jobRepository.insertJob(job, it) }
+
+        //jobService.scheduleEmailConfirmation("root")
         //val jobs = jobService.getReadyJobs()
         //jobService.serve(jobs.first())
     }

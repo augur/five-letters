@@ -131,14 +131,14 @@ internal class LetterRepositoryTest : MongoTestSuite() {
     @Test
     fun `should update letter as read`() {
         // Given
-        val oid = ObjectIdGenerator.generateNewId<ObjectId>().id
+        val oid = ObjectId()
         val date1 = getDateTime("2017-02-16T21:00:00.000+01:00")
         val date2 = getDateTime("2018-02-16T15:00:00.000+02:35")
         val letter = Letter(oid, "login", "blah-blah", false, date1, date2)
 
         // When
         repository.saveNewLetter(letter)
-        val actual = repository.markLetterAsRead("login", oid.toHexString())
+        val actual = repository.markLetterAsRead("login", oid.toString())
 
         // Then
         val found = collection.findOneById(oid)

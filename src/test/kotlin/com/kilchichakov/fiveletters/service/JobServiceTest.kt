@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.invokePrivate
 import com.kilchichakov.fiveletters.model.UserData
+import com.kilchichakov.fiveletters.model.job.DailyMailingJobPayload
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobPayload
@@ -10,6 +11,7 @@ import com.kilchichakov.fiveletters.model.job.JobStatus
 import com.kilchichakov.fiveletters.model.job.RepeatMode
 import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
+import com.kilchichakov.fiveletters.service.job.DailyMailingJobProcessor
 import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
 import com.mongodb.client.ClientSession
 import io.mockk.confirmVerified
@@ -52,6 +54,9 @@ internal class JobServiceTest {
 
     @RelaxedMockK
     lateinit var emailConfirmJobProcessor: EmailConfirmJobProcessor
+
+    @RelaxedMockK
+    lateinit var dailyMailingJobProcessor: DailyMailingJobProcessor
 
     @InjectMockKs
     lateinit var service: JobService
@@ -174,7 +179,7 @@ internal class JobServiceTest {
     }
 
     @Test
-    fun `should reschedule task if succcesful and always repeat`() {
+    fun `should reschedule task if successful and always repeat`() {
         // Given
         val date = Date.from(instant)
         val interval = 100L
@@ -288,5 +293,19 @@ internal class JobServiceTest {
         assertThat(actual).isEqualTo(true)
         verify { emailConfirmJobProcessor.process(payload) }
         confirmVerified(emailConfirmJobProcessor)
+    }
+
+    @Test
+    fun `should execute with DailyMailing payload`() {
+        // Given
+        val payload = DailyMailingJobPayload("stub")
+
+        // When
+        val actual = service.invokePrivate("executePayload", payload)
+
+        // Then
+        assertThat(actual).isEqualTo(true)
+        verify { dailyMailingJobProcessor.process(payload) }
+        confirmVerified(dailyMailingJobProcessor)
     }
 }

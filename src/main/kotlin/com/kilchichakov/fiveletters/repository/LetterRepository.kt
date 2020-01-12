@@ -11,6 +11,7 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.getCollection
 import org.litote.kmongo.gt
 import org.litote.kmongo.lte
+import org.litote.kmongo.ne
 import org.litote.kmongo.orderBy
 import org.litote.kmongo.setValue
 import org.springframework.stereotype.Repository
@@ -43,7 +44,7 @@ class LetterRepository(
     fun getLettersForMailing(): List<Letter> {
         LOG.info { "load letters of user mail sending" }
         val byIsRead = Letter::read eq false
-        val byIsMailed = Letter::mailSent eq false
+        val byIsMailed = Letter::mailSent ne true
         val byOpenDate = Letter::openDate lte clock.now()
         val found = collection.find(and(byIsMailed, byIsRead, byOpenDate))
         LOG.info { "found ${found.count()} letters" }
