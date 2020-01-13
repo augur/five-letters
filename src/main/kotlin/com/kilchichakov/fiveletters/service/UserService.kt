@@ -40,6 +40,9 @@ class UserService : UserDetailsService {
     @Autowired
     private lateinit var userDataRepository: UserDataRepository
 
+    @Autowired
+    private lateinit var jobService: JobService
+
     fun registerNewUser(login: String, password: String, licenceAccepted: Boolean, code: String?) {
         LOG.info { "registering new user $login" }
         if (!licenceAccepted) throw TermsOfUseException("Licence was not accepted")
@@ -77,7 +80,9 @@ class UserService : UserDetailsService {
 
     fun updateUserData(login: String, email: String, nickname: String) {
         LOG.info { "updating userData of $login - $email, $nickname" }
-        if (!userDataRepository.updateUserData(login, email, nickname)) throw DatabaseException("Unexpected update result during changing user $login userData")
+        val updateResult = userDataRepository.updateUserData(login, email, nickname)
+        if (!updateResult.success) throw DatabaseException("Unexpected update result during changing user $login userData")
+        if (updateResult.emailChanged) jobService.scheduleEmailConfirmation(login)
     }
 
     fun setConfirmationCode(login: String, code: String, clientSession: ClientSession) {

@@ -55,7 +55,8 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         val done = repository.updateUserData(login, newEmail, newNickname)
         val actual = repository.loadUserData(login) ?: throw Exception()
 
-        assertThat(done).isTrue()
+        assertThat(done.success).isTrue()
+        assertThat(done.emailChanged).isTrue()
         assertThat(actual.email).isEqualTo(newEmail)
         assertThat(actual.nickname).isEqualTo(newNickname)
         assertThat(actual.emailConfirmed).isFalse()
@@ -75,7 +76,8 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         val done = repository.updateUserData(login, email, newNickname)
         val actual = repository.loadUserData(login) ?: throw Exception()
 
-        assertThat(done).isTrue()
+        assertThat(done.success).isTrue()
+        assertThat(done.emailChanged).isFalse()
         assertThat(actual.nickname).isEqualTo(newNickname)
         assertThat(actual.emailConfirmed).isTrue()
     }

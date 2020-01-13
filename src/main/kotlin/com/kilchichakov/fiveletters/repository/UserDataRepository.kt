@@ -26,19 +26,23 @@ class UserDataRepository(
         }
     }
 
-    fun updateUserData(login: String, email: String, nickname: String): Boolean {
+    data class UpdateUserDataResult(val success: Boolean, val emailChanged: Boolean)
+
+    fun updateUserData(login: String, email: String, nickname: String): UpdateUserDataResult {
         LOG.info { "updating userData of $login - $email, $nickname" }
         val existingData =  loadUserData(login) ?: throw DatabaseException("UserData of $login not found")
         val byLogin = UserData::login eq login
         var update = setValue(UserData::email, email)
+        var emailChanged = false
         if (existingData.email != email) {
             LOG.info { "email changed, setting to unconfirmed" }
+            emailChanged = true
             update = and(update, setValue(UserData::emailConfirmed, false))
         }
         update = and(update, setValue(UserData::nickname, nickname))
         val result = collection.updateOne(byLogin, update)
         LOG.info { "updated ${result.modifiedCount} users" }
-        return result.modifiedCount == 1L
+        return UpdateUserDataResult(result.modifiedCount == 1L, emailChanged)
     }
 
     fun setEmailConfirmationCode(login: String, code: String, clientSession: ClientSession): Boolean {

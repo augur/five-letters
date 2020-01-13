@@ -10,6 +10,7 @@ import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.AuthDataRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
+import com.kilchichakov.fiveletters.repository.UserDataRepository.UpdateUserDataResult
 import com.mongodb.client.ClientSession
 import io.mockk.Runs
 import io.mockk.confirmVerified
@@ -49,6 +50,9 @@ internal class UserServiceTest {
 
     @RelaxedMockK
     lateinit var userDataRepository: UserDataRepository
+
+    @RelaxedMockK
+    lateinit var jobService: JobService
 
     @InjectMockKs
     lateinit var service: UserService
@@ -216,19 +220,40 @@ internal class UserServiceTest {
     }
 
     @Test
-    fun `should update userData`() {
+    fun `should update userData with changed email`() {
         // Given
         val login = "loupa"
         val nick = "poupa"
         val email = "loupa@poupa"
-        every { userDataRepository.updateUserData(any(), any(), any()) } returns true
+        every { userDataRepository.updateUserData(any(), any(), any()) } returns UpdateUserDataResult(true, true)
 
         // When
         service.updateUserData(login, email, nick)
 
         // Then
-        verify { userDataRepository.updateUserData(login, email, nick) }
-        confirmVerified(userDataRepository)
+        verify {
+            userDataRepository.updateUserData(login, email, nick)
+            jobService.scheduleEmailConfirmation(login)
+        }
+        confirmVerified(userDataRepository, jobService)
+    }
+
+    @Test
+    fun `should update userData without changed email`() {
+        // Given
+        val login = "loupa"
+        val nick = "poupa"
+        val email = "loupa@poupa"
+        every { userDataRepository.updateUserData(any(), any(), any()) } returns UpdateUserDataResult(true, false)
+
+        // When
+        service.updateUserData(login, email, nick)
+
+        // Then
+        verify {
+            userDataRepository.updateUserData(login, email, nick)
+        }
+        confirmVerified(userDataRepository, jobService)
     }
 
     @Test
@@ -237,7 +262,7 @@ internal class UserServiceTest {
         val login = "loupa"
         val nick = "poupa"
         val email = "loupa@poupa"
-        every { userDataRepository.updateUserData(any(), any(), any()) } returns false
+        //every { userDataRepository.updateUserData(any(), any(), any()) } returns false
 
         // When
         assertThrows<DatabaseException> { service.updateUserData(login, email, nick) }
