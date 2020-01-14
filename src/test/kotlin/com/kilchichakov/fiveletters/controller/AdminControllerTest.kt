@@ -2,8 +2,10 @@ package com.kilchichakov.fiveletters.controller
 
 import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.model.OneTimePassCode
+import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
+import com.kilchichakov.fiveletters.service.UserService
 import com.mongodb.client.MongoDatabase
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -24,6 +26,9 @@ class AdminControllerTest : ControllerTestSuite() {
 
     @RelaxedMockK
     lateinit var passCodeService: PassCodeService
+
+    @RelaxedMockK
+    lateinit var userService: UserService
 
     @InjectMockKs
     lateinit var controller: AdminController
@@ -60,4 +65,21 @@ class AdminControllerTest : ControllerTestSuite() {
         confirmVerified(passCodeService)
     }
 
+    @Test
+    fun `should change user's password`() {
+        // Given
+        val login = "loupa"
+        val pwd = "loupeaux"
+        val request = AdminChangePasswordRequest(login, pwd)
+
+        // When
+        controller.changeUserPassword(request)
+
+        // Then
+        verify {
+            inputValidationService.validate(request)
+            userService.changeUserPassword(login, pwd)
+        }
+        confirmVerified(inputValidationService, userService)
+    }
 }

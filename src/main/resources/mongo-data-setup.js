@@ -92,3 +92,23 @@ db.timePeriod.save(
          enabled: true
      }
 )
+
+// === 20.01.1 ===
+
+db.job.save(
+    {
+        schedule:
+            {
+                nextExecutionTime: {"$date":{"$numberLong":"1578829265115"}},
+                repeatMode: "ALWAYS",
+                repeatInterval: {"$numberLong":"3600000"}
+            },
+        payload:
+            {
+                type: "dailyMailing",
+                "data": ""
+            },
+        status: "DONE"
+    }
+)
+
