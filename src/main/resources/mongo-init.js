@@ -28,7 +28,7 @@ db.timePeriod.createIndex(
     }
 )
 
-// === 20.01.1 ===
+// === 20.1.1 ===
 
 db.job.createIndex(
     {
