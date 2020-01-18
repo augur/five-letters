@@ -10,9 +10,10 @@ data class Letter(
         val read: Boolean,
         val sendDate: Date,
         val openDate: Date,
-        val mailSent: Boolean = false
+        val mailSent: Boolean = false,
+        val archived: Boolean = false
 ) {
     override fun toString(): String {
-        return "Letter(_id=$_id, login='$login', message.length=${message.length}, read=$read, sendDate=$sendDate, openDate=$openDate, mailSent=$mailSent)"
+        return "Letter(_id=$_id, login='$login', message.length=${message.length}, read=$read, sendDate=$sendDate, openDate=$openDate, mailSent=$mailSent, archived=$archived)"
     }
 }

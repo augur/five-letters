@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.util.now
 import com.mongodb.client.MongoDatabase
@@ -48,7 +49,8 @@ class LetterRepository(
         val byOpenDate = Letter::openDate lte clock.now()
         val found = collection.find(and(byIsMailed, byIsRead, byOpenDate))
         LOG.info { "found ${found.count()} letters" }
-        return found.toList()    }
+        return found.toList()
+    }
 
     fun getFutureLetters(login: String, limit: Int): List<SealedLetterEnvelop> {
         LOG.info { "load future letters of user $login, limit $limit" }
@@ -63,7 +65,7 @@ class LetterRepository(
     }
 
     fun markLetterAsRead(login: String, id: String): Boolean {
-        LOG.info { "updating letter $id of $login as read"}
+        LOG.info { "updating letter $id of $login as read" }
         val byLogin = Letter::login eq login
         val byId = Letter::_id eq ObjectId(id)
         val update = setValue(Letter::read, true)
@@ -73,7 +75,7 @@ class LetterRepository(
     }
 
     fun markLettersAsMailed(ids: List<String>): Boolean {
-        LOG.info { "updating letters with ids $ids as mail sent"}
+        LOG.info { "updating letters with ids $ids as mail sent" }
         var success = true
         for (id in ids) {
             val byId = Letter::_id eq ObjectId(id)
@@ -85,5 +87,31 @@ class LetterRepository(
         }
 
         return success
+    }
+
+    fun inbox(login: String, skip: Int, limit: Int,
+              includeRead: Boolean, includeMailed: Boolean, includeArchived: Boolean): Page<Letter> {
+        LOG.info { "load inbox letters for $login" }
+        var filter = and(Letter::login eq login, Letter::openDate lte clock.now())
+        if (!includeRead) filter = and(filter, Letter::read ne true)
+        if (!includeMailed) filter = and(filter, Letter::mailSent ne true)
+        if (!includeArchived) filter = and(filter, Letter::archived ne true)
+        val sorted = orderBy(Letter::sendDate, ascending = false)
+
+        val found = collection.find(filter)
+        val total = found.count()
+
+        val elements = found
+                .sort(sorted)
+                .skip(skip)
+                .limit(limit)
+                .toList()
+
+        return Page(
+                elements,
+                1 + skip / limit,
+                limit,
+                total
+        )
     }
 }

@@ -166,6 +166,37 @@ internal class LetterRepositoryTest : MongoTestSuite() {
         assertThat(found).isEqualToIgnoringGivenFields(letter, "mailSent")
     }
 
+    @Test
+    fun `should perform complex inbox query`() {
+        // Given
+        val login = "loupa"
+        val skip = 1
+        val limit = 2
+
+
+        val expectedSecond = Letter(ObjectId(), login, "2", false, Date.from(instant.plusMillis(50)), Date.from(instant), false)
+        val expectedFirst = Letter(ObjectId(), login, "1", false, Date.from(instant.plusMillis(100)), Date.from(instant), false)
+        val skipped = Letter(ObjectId(), login, "3", false, Date.from(instant.plusMillis(200)), Date.from(instant), false)
+        val outLimit = Letter(ObjectId(), login, "4", false, Date.from(instant.plusMillis(40)), Date.from(instant), false)
+        val anotherLogin = Letter(ObjectId(), "poupa", "5", false, Date.from(instant.plusMillis(100)), Date.from(instant), false)
+        val read = Letter(ObjectId(), login, "6", true, Date.from(instant.plusMillis(100)), Date.from(instant), false)
+        val mailed = Letter(ObjectId(), login, "7", false, Date.from(instant.plusMillis(100)), Date.from(instant), true)
+        val archived = Letter(ObjectId(), login, "9", false, Date.from(instant.plusMillis(100)), Date.from(instant), false, true)
+        val notReady = Letter(ObjectId(), login, "8", false, Date.from(instant.plusMillis(100)), Date.from(instant.plusMillis(100)), false)
+
+        listOf(expectedFirst, expectedSecond, skipped, outLimit, anotherLogin, read, mailed, archived, notReady)
+                .forEach(repository::saveNewLetter)
+
+        // When
+        val actual = repository.inbox(login, skip, limit, includeRead = false, includeMailed = false, includeArchived = false)
+
+        // Then
+        assertThat(actual.elements).containsExactly(expectedFirst, expectedSecond)
+        assertThat(actual.number).isEqualTo(1)
+        assertThat(actual.size).isEqualTo(2)
+        assertThat(actual.total).isEqualTo(4)
+    }
+
     private fun getDateTime(s: String): Date {
         val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
         return format.parse(s)

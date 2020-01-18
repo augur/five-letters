@@ -84,14 +84,14 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val message = "some message"
         val sendDate = Date.from(Instant.ofEpochMilli(100500))
         val openDate = Date.from(Instant.ofEpochMilli(100600))
-        val letter = Letter(ObjectId(hexString), LOGIN, message, false, sendDate, openDate)
+        val letter = Letter(ObjectId(hexString), LOGIN, message, true, sendDate, openDate)
         every { letterService.getNewLetters(LOGIN) } returns listOf(letter)
 
         // When
         val actual = controller.getNewLetters()
 
         // Then
-        assertThat(actual.letters).containsExactly(LetterDto(hexString, sendDate, message))
+        assertThat(actual.letters).containsExactly(LetterDto(hexString, sendDate, message, read = true, mailed = false))
 
         verify {
             ControllerUtils.getLogin()

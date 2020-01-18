@@ -56,7 +56,7 @@ class LetterController {
     fun getNewLetters(): GetNewLettersResponse {
         LOG.info { "asked to get new letters" }
         val letters = letterService.getNewLetters(getLogin()!!)
-        return GetNewLettersResponse(letters.map { LetterDto(it._id!!.toString(), it.sendDate, it.message) })
+        return GetNewLettersResponse(letters.map { LetterDto(it._id!!.toString(), it.sendDate, it.message, it.read, it.mailSent) })
                 .logResult()
     }
 
