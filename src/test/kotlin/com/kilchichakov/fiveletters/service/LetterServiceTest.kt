@@ -2,8 +2,10 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.TimePeriod
+import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.repository.LetterRepository
 import io.mockk.Runs
 import io.mockk.confirmVerified
@@ -214,6 +216,29 @@ internal class LetterServiceTest {
             val actual = service.calcOpenDate(case.period, case.offset)
             assertThat(actual).isEqualTo(case.expected)
         }
+    }
+
+    @Test
+    fun `should make inbox call`() {
+        // Given
+        val login = "loupa"
+        val request = PageRequest(
+                pageNumber = 3,
+                pageSize = 20,
+                includeRead = true,
+                includeMailed = false,
+                includeArchived = true
+        )
+        val expected = mockk<Page<Letter>>()
+        every { letterRepository.inbox(any(), any(), any(), any(), any(), any()) } returns expected
+
+        // When
+        val actual = service.getInboxPage(login, request)
+
+        // Then
+        assertThat(actual).isEqualTo(expected)
+        verify { letterRepository.inbox(login, 40, 20, includeRead = true, includeMailed = false, includeArchived = true) }
+        confirmVerified(letterRepository)
     }
 
     data class CalcDateCase(

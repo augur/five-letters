@@ -3,9 +3,11 @@ package com.kilchichakov.fiveletters.controller
 import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.exception.ErrorCode
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
+import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.TimePeriodService
@@ -91,11 +93,36 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val actual = controller.getNewLetters()
 
         // Then
-        assertThat(actual.letters).containsExactly(LetterDto(hexString, sendDate, message, read = true, mailed = false))
+        assertThat(actual.letters).containsExactly(LetterDto(hexString, sendDate, message, read = true, mailed = false, archived = false))
 
         verify {
             ControllerUtils.getLogin()
             letterService.getNewLetters(LOGIN)
+        }
+        confirmVerified(letterService)
+    }
+
+    @Test
+    fun `should request inbox page`() {
+        // Given
+        val request = mockk<PageRequest>()
+        val hexString = "5d581a125d9f6680329c6f85"
+        val message = "some message"
+        val sendDate = Date.from(Instant.ofEpochMilli(100500))
+        val openDate = Date.from(Instant.ofEpochMilli(100600))
+        val letter = Letter(ObjectId(hexString), LOGIN, message, true, sendDate, openDate)
+        val expected = LetterDto(hexString, sendDate, message, read = true, mailed = false, archived = false)
+        val page = Page(listOf(letter), 1,2, 3)
+
+        every { letterService.getInboxPage(any(), any()) } returns page
+
+        // When
+        val actual = controller.getInboxPage(request)
+
+        // Then
+        assertThat(actual.elements).containsExactly(expected)
+        verify {
+            letterService.getInboxPage(LOGIN, request)
         }
         confirmVerified(letterService)
     }

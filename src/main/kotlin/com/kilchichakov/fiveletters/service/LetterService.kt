@@ -3,8 +3,10 @@ package com.kilchichakov.fiveletters.service
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.TimePeriod
+import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.repository.LetterRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -32,6 +34,18 @@ class LetterService {
     fun getNewLetters(login: String): List<Letter> {
         LOG.info { "getting new letters for user $login" }
         return letterRepository.getNewLetters(login)
+    }
+
+    fun getInboxPage(login: String, pageRequest: PageRequest): Page<Letter> {
+        LOG.info { "request inbox page with $pageRequest for user $login" }
+        return letterRepository.inbox(
+                login = login,
+                skip = pageRequest.pageSize * (pageRequest.pageNumber - 1),
+                limit = pageRequest.pageSize,
+                includeRead = pageRequest.includeRead,
+                includeMailed = pageRequest.includeMailed,
+                includeArchived = pageRequest.includeArchived
+        )
     }
 
     fun getLettersForMailing(): List<Letter> {

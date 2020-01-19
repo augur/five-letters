@@ -4,11 +4,13 @@ import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
 import com.kilchichakov.fiveletters.controller.ControllerUtils.getLogin
 import com.kilchichakov.fiveletters.controller.ControllerUtils.processAndRespondCode
+import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.dto.GetFutureLettersResponse
 import com.kilchichakov.fiveletters.model.dto.GetNewLettersResponse
 import com.kilchichakov.fiveletters.model.dto.GetTimePeriodsResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
+import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.LetterService
@@ -56,7 +58,22 @@ class LetterController {
     fun getNewLetters(): GetNewLettersResponse {
         LOG.info { "asked to get new letters" }
         val letters = letterService.getNewLetters(getLogin()!!)
-        return GetNewLettersResponse(letters.map { LetterDto(it._id!!.toString(), it.sendDate, it.message, it.read, it.mailSent) })
+        return GetNewLettersResponse(letters.map { LetterDto(it._id!!.toString(), it.sendDate, it.message, it.read, it.mailSent, it.archived) })
+                .logResult()
+    }
+
+    @PostMapping("/inbox")
+    @Logged
+    fun getInboxPage(@RequestBody request: PageRequest): Page<LetterDto> {
+        val login = getLogin()!!
+        LOG.info { "asked to get inbox page, request $request" }
+        val page = letterService.getInboxPage(login, request)
+        return Page(
+                page.elements.map { LetterDto(it._id!!.toString(), it.sendDate, it.message, it.read, it.mailSent, it.archived) },
+                number = page.number,
+                size = page.size,
+                total = page.total
+        )
                 .logResult()
     }
 
