@@ -7,11 +7,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
 import org.litote.kmongo.findOneById
 import org.litote.kmongo.getCollection
-import org.litote.kmongo.id.ObjectIdGenerator
 import java.text.SimpleDateFormat
 import java.time.Clock
 import java.time.Instant
@@ -171,30 +169,37 @@ internal class LetterRepositoryTest : MongoTestSuite() {
         // Given
         val login = "loupa"
         val skip = 1
-        val limit = 2
+        val limit = 3
 
+        val three_second_past = Date.from(instant.minusMillis(3000))
+        val two_second_past = Date.from(instant.minusMillis(2000))
+        val one_second_past = Date.from(instant.minusMillis(1000))
+        val one_second_future = Date.from(instant.plusMillis(1000))
+        val two_second_future = Date.from(instant.plusMillis(2000))
+        val three_second_future = Date.from(instant.plusMillis(3000))
 
-        val expectedSecond = Letter(ObjectId(), login, "2", false, Date.from(instant.plusMillis(50)), Date.from(instant), false)
-        val expectedFirst = Letter(ObjectId(), login, "1", false, Date.from(instant.plusMillis(100)), Date.from(instant), false)
-        val skipped = Letter(ObjectId(), login, "3", false, Date.from(instant.plusMillis(200)), Date.from(instant), false)
-        val outLimit = Letter(ObjectId(), login, "4", false, Date.from(instant.plusMillis(40)), Date.from(instant), false)
+        val outLimit = Letter(ObjectId(), login, "4", false, three_second_future, three_second_past, false)
+        val expectedThird = Letter(ObjectId(), login, "3333", false, two_second_past, two_second_past, false)
+        val expectedSecond = Letter(ObjectId(), login, "222", false, one_second_past, two_second_past, false)
+        val expectedFirst = Letter(ObjectId(), login, "11", false, one_second_future, one_second_past, false)
+        val skipped = Letter(ObjectId(), login, "0", false, two_second_future, one_second_past, false)
         val anotherLogin = Letter(ObjectId(), "poupa", "5", false, Date.from(instant.plusMillis(100)), Date.from(instant), false)
         val read = Letter(ObjectId(), login, "6", true, Date.from(instant.plusMillis(100)), Date.from(instant), false)
         val mailed = Letter(ObjectId(), login, "7", false, Date.from(instant.plusMillis(100)), Date.from(instant), true)
         val archived = Letter(ObjectId(), login, "9", false, Date.from(instant.plusMillis(100)), Date.from(instant), false, true)
-        val notReady = Letter(ObjectId(), login, "8", false, Date.from(instant.plusMillis(100)), Date.from(instant.plusMillis(100)), false)
+        val notReady = Letter(ObjectId(), login, "8", false, Date.from(instant.plusMillis(100)), one_second_future, false)
 
-        listOf(expectedFirst, expectedSecond, skipped, outLimit, anotherLogin, read, mailed, archived, notReady)
+        listOf(expectedThird, expectedFirst, expectedSecond, skipped, outLimit, anotherLogin, read, mailed, archived, notReady)
                 .forEach(repository::saveNewLetter)
 
         // When
         val actual = repository.inbox(login, skip, limit, includeRead = false, includeMailed = false, includeArchived = false)
 
         // Then
-        assertThat(actual.elements).containsExactly(expectedFirst, expectedSecond)
-        assertThat(actual.number).isEqualTo(1)
-        assertThat(actual.size).isEqualTo(2)
-        assertThat(actual.total).isEqualTo(4)
+        assertThat(actual.elements).containsExactly(expectedFirst, expectedSecond, expectedThird)
+        assertThat(actual.pageNumber).isEqualTo(1)
+        assertThat(actual.pageSize).isEqualTo(3)
+        assertThat(actual.total).isEqualTo(5)
     }
 
     private fun getDateTime(s: String): Date {

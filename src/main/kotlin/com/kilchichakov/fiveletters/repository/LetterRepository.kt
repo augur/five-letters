@@ -8,6 +8,7 @@ import com.kilchichakov.fiveletters.util.now
 import com.mongodb.client.MongoDatabase
 import org.bson.types.ObjectId
 import org.litote.kmongo.and
+import org.litote.kmongo.descending
 import org.litote.kmongo.eq
 import org.litote.kmongo.getCollection
 import org.litote.kmongo.gt
@@ -96,7 +97,8 @@ class LetterRepository(
         if (!includeRead) filter = and(filter, Letter::read ne true)
         if (!includeMailed) filter = and(filter, Letter::mailSent ne true)
         if (!includeArchived) filter = and(filter, Letter::archived ne true)
-        val sorted = orderBy(Letter::sendDate, ascending = false)
+
+        val sorted = descending(Letter::openDate, Letter::sendDate)
 
         val found = collection.find(filter)
         val total = found.count()
