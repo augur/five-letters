@@ -29,7 +29,8 @@ class RegisterControllerTest : ControllerTestSuite() {
         val pwd = "pw"
         val acceptLicence = true
         val passCode = "XXX-YYY-ZZZ"
-        val request = RegisterRequest(login, pwd, acceptLicence, passCode)
+        val email = "email"
+        val request = RegisterRequest(login, pwd, acceptLicence, passCode, email)
 
         // When
         val actual = controller.register(request)
@@ -39,7 +40,7 @@ class RegisterControllerTest : ControllerTestSuite() {
         verify(exactly = 0) { ControllerUtils.getLogin() }
         verify {
             inputValidationService.validate(request)
-            userService.registerNewUser(login, pwd, acceptLicence, passCode)
+            userService.registerNewUser(login, pwd, acceptLicence, passCode, email)
         }
         confirmVerified(inputValidationService, userService)
     }

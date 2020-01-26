@@ -20,7 +20,9 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -67,6 +69,10 @@ internal class UserServiceTest {
         val code = "xx-yy-zz"
         val passCode = mockk<OneTimePassCode>()
         val session = mockk<ClientSession>()
+        val email = "some@email"
+
+        val spy = spyk(service)
+        every { spy.updateUserData(any(), any(), any()) } just runs
 
         every { transactionWrapper.executeInTransaction(any()) } answers {
             firstArg<(ClientSession)->Any>().invoke(session)
@@ -77,7 +83,7 @@ internal class UserServiceTest {
         every { passwordEncoder.encode(any()) } returns encoded
 
         // When
-        service.registerNewUser(login, password, true, code)
+        spy.registerNewUser(login, password, true, code, email)
 
         // Then
         assertThat(slot.captured._id).isNull()
@@ -89,6 +95,7 @@ internal class UserServiceTest {
             passwordEncoder.encode(password)
             passCodeService.usePassCode(passCode, login, session)
             authDataRepository.insertNewUser(slot.captured, session)
+            spy.updateUserData(login, email, "")
         }
         confirmVerified(systemStateRepository, passwordEncoder, authDataRepository, passCodeService)
     }
@@ -97,7 +104,7 @@ internal class UserServiceTest {
     fun `should fail to register if licence is not accepted`() {
         // When
         assertThrows<TermsOfUseException> {
-            service.registerNewUser("lg", "pw", false, "pscd")
+            service.registerNewUser("lg", "pw", false, "pscd", "some-email")
         }
     }
 
@@ -105,7 +112,7 @@ internal class UserServiceTest {
     fun `should fail to register if registration is disabled`() {
         every { systemStateRepository.read().registrationEnabled } returns false
         assertThrows<SystemStateException> {
-            service.registerNewUser("lg", "pw", true, "pscd")
+            service.registerNewUser("lg", "pw", true, "pscd", "some-email")
         }
     }
 

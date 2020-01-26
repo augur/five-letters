@@ -81,13 +81,14 @@ internal class InputValidationServiceTest {
         val login = "loupa"
         val pwd = "poupa"
         val passCode = "xxx-yyy-zzz"
+        val email = "email"
         val spy = spyk(service, recordPrivateCalls = true)
         every { spy["checkLogin"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkPassword"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkPassCode"](any<ValidationResult>(), any<String>()) } returns 0
 
         // When
-        spy.validate(RegisterRequest(login, pwd, false, passCode))
+        spy.validate(RegisterRequest(login, pwd, false, passCode, email))
 
         // Then
         verify { spy["checkLogin"](any<ValidationResult>(), login) }

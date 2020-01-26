@@ -43,7 +43,7 @@ class UserService : UserDetailsService {
     @Autowired
     private lateinit var jobService: JobService
 
-    fun registerNewUser(login: String, password: String, licenceAccepted: Boolean, code: String?) {
+    fun registerNewUser(login: String, password: String, licenceAccepted: Boolean, code: String?, email: String) {
         LOG.info { "registering new user $login" }
         if (!licenceAccepted) throw TermsOfUseException("Licence was not accepted")
         if (!systemStateRepository.read().registrationEnabled) throw SystemStateException("Registration is disabled")
@@ -57,7 +57,7 @@ class UserService : UserDetailsService {
             LOG.info { "consumed" }
             authDataRepository.insertNewUser(userData, it)
         }
-
+        updateUserData(login, email, "")
     }
 
     override fun loadUserByUsername(login: String): UserDetails {
