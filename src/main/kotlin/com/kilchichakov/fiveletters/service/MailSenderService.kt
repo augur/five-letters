@@ -33,7 +33,13 @@ class MailSenderService {
                 "html" to email.html
         ))
 
-        LOG.info { "built uri: $uri" }
+        LOG.info {
+            "built uri: ${uri.toString().let {
+                var escaped = it
+                escaped.replaceAfter("&html=", "")
+                escaped.replaceAfter("&text=", "")
+            }}"
+        }
 
         val res = restTemplate.postForEntity(uri, null, Any::class.java)
 
