@@ -64,5 +64,4 @@ internal class ProfileControllerTest : ControllerTestSuite() {
         verify { userService.updateUserData(LOGIN, email, nick) }
         confirmVerified(userService)
     }
-
 }

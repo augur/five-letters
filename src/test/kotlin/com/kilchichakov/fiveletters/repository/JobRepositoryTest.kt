@@ -101,6 +101,7 @@ class JobRepositoryTest : MongoTestSuite() {
         val actual = repository.setJobStatus(id, newStatus, newSchedule)
 
         // Then
+        assertThat(actual).isTrue()
         val found = collection.findOne()!!
         assertThat(found._id).isEqualTo(id)
         assertThat(found.status).isEqualTo(newStatus)

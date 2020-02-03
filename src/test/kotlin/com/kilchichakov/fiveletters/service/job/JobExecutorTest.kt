@@ -15,6 +15,7 @@ import io.mockk.verify
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.lang.RuntimeException
 import java.time.Clock
 import java.time.Instant
 import java.util.Date
@@ -61,6 +62,7 @@ internal class JobExecutorTest {
         every { lockService.tryLock(jobId2) } returns job2lock
         every { lockService.tryLock(jobId3) } returns job3lock
         every { lockService.tryLock(jobId4) } returns job4lock
+        every { job2.status } throws RuntimeException("tried to read unavailable $job2")
         every { job3.status } returns JobStatus.ACTIVE
         every { job4.status } returns JobStatus.ACTIVE
         every { job3.schedule.nextExecutionTime } returns Date.from(instant.plusMillis(100))
