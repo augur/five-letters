@@ -5,6 +5,7 @@ import com.kilchichakov.fiveletters.exception.ErrorCode
 import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import com.kilchichakov.fiveletters.service.UserService
+import dev.ktobe.toBe
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -60,7 +61,7 @@ internal class ProfileControllerTest : ControllerTestSuite() {
         val actual = controller.updateProfile(request)
 
         // Then
-        assertThat(actual.code).isEqualTo(ErrorCode.NO_ERROR.numeric)
+        actual.code toBe ErrorCode.NO_ERROR.numeric
         verify { userService.updateUserData(LOGIN, email, nick) }
         confirmVerified(userService)
     }
