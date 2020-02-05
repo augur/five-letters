@@ -33,7 +33,7 @@ class LetterController {
     lateinit var timePeriodService: TimePeriodService
 
     @Autowired
-    protected lateinit var inputValidationService: InputValidationService
+    private lateinit var inputValidationService: InputValidationService
 
     @PostMapping("/send")
     @Logged
@@ -42,7 +42,7 @@ class LetterController {
             inputValidationService.validate(request)
             LOG.info { "asked to send new letter: $request" }
             letterService.sendLetter(login!!, request.message, request.period, request.timezoneOffset)
-        }.also { LOG.info { "result is $it" } }
+        }.logResult()
     }
 
     @GetMapping("/periods")
@@ -66,6 +66,7 @@ class LetterController {
     @Logged
     fun getInboxPage(@RequestBody request: PageRequest): Page<LetterDto> {
         val login = getLogin()!!
+        inputValidationService.validate(request)
         LOG.info { "asked to get inbox page, request $request" }
         val page = letterService.getInboxPage(login, request)
         return Page(
@@ -90,6 +91,7 @@ class LetterController {
     @Logged
     fun markAsRead(@RequestBody letterId: String): OperationCodeResponse {
         return processAndRespondCode { login ->
+            //TODO check single letterId
             LOG.info { "asked to mark letter as read: $letterId" }
             letterService.markLetterAsRead(login!!, letterId)
         }.logResult()

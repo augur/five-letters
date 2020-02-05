@@ -25,9 +25,8 @@ class AuthDataRepository(
 
     fun loadUserData(login: String): AuthData? {
         LOG.info { "loading authData of $login" }
-        return collection.findOne(AuthData::login eq login).also {
-            LOG.info { "found userData $it" }
-        }
+        return collection.findOne(AuthData::login eq login)
+                .also { LOG.info { "found userData $it" } }
     }
 
     fun changePassword(login: String, encodedPassword: String): Boolean {

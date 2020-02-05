@@ -21,9 +21,8 @@ class UserDataRepository(
 
     fun loadUserData(login: String): UserData? {
         LOG.info { "loading userData of $login" }
-        return collection.findOne(UserData::login eq login).also {
-            LOG.info { "found userData $it" }
-        }
+        return collection.findOne(UserData::login eq login)
+                .also { LOG.info { "found userData $it" } }
     }
 
     data class UpdateUserDataResult(val success: Boolean, val emailChanged: Boolean)

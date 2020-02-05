@@ -60,6 +60,7 @@ class AdminController {
     @Logged
     fun generateOneTimePassCode(@RequestParam seconds: Long): OneTimePassCode {
         ControllerUtils.getLogin()
+        //TODO validate raw seconds
         LOG.info { "asked to generate one-time passcode with seconds valid = $seconds" }
         return passCodeService.generateOneTimePassCode(seconds)
     }

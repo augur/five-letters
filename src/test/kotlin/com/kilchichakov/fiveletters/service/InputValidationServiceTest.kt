@@ -3,12 +3,16 @@ package com.kilchichakov.fiveletters.service
 import com.kilchichakov.fiveletters.invokePrivate
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
+import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
+import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import com.kilchichakov.fiveletters.service.InputValidationService.*
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.junit5.MockKExtension
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -86,14 +90,52 @@ internal class InputValidationServiceTest {
         every { spy["checkLogin"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkPassword"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkPassCode"](any<ValidationResult>(), any<String>()) } returns 0
+        every { spy["checkEmail"](any<ValidationResult>(), any<String>()) } returns 0
 
         // When
         spy.validate(RegisterRequest(login, pwd, false, passCode, email))
 
         // Then
-        verify { spy["checkLogin"](any<ValidationResult>(), login) }
-        verify { spy["checkPassword"](any<ValidationResult>(), pwd) }
-        verify { spy["checkPassCode"](any<ValidationResult>(), passCode) }
+        verify {
+            spy["checkLogin"](any<ValidationResult>(), login)
+            spy["checkPassword"](any<ValidationResult>(), pwd)
+            spy["checkPassCode"](any<ValidationResult>(), passCode)
+            spy["checkEmail"](any<ValidationResult>(), email)
+        }
+    }
+
+    @Test
+    fun `should validate page request`() {
+        // Given
+        val pageNumber = 11
+        val pageSize = 239
+        val spy = spyk(service, recordPrivateCalls = true)
+        every { spy["checkPageNumber"](any<ValidationResult>(), any<Int>()) } returns 0
+        every { spy["checkPageSize"](any<ValidationResult>(), any<Int>()) } returns 0
+
+        // When
+        spy.validate(PageRequest(pageNumber, pageSize, includeRead = true, includeMailed = false, includeArchived = true))
+
+        // Then
+        verify { spy["checkPageNumber"](any<ValidationResult>(), pageNumber) }
+        verify { spy["checkPageSize"](any<ValidationResult>(), pageSize) }
+    }
+
+    @Test
+    fun `should validate update profile request`() {
+        // Given
+        val email = "email"
+        val nickname = "nickname"
+        val spy = spyk(service, recordPrivateCalls = true)
+        every { spy["checkEmail"](any<ValidationResult>(), any<String>()) } returns 0
+        every { spy["checkNickname"](any<ValidationResult>(), any<String>()) } returns 0
+
+        // When
+        spy.validate(UpdateProfileRequest(email, nickname))
+
+        // Then
+        verify { spy["checkEmail"](any<ValidationResult>(), email) }
+        verify { spy["checkNickname"](any<ValidationResult>(), nickname) }
     }
 
 
@@ -196,6 +238,78 @@ internal class InputValidationServiceTest {
         testCases.forEach {
             val vResult = ValidationResult(ArrayList())
             service.invokePrivate("checkTimezoneOffset", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
+    fun `should check page number`() {
+        // Given
+        val testCases = listOf(
+                IntCase(-5, false),
+                IntCase(0, false),
+                IntCase(1, true),
+                IntCase(5, true)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkPageNumber", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
+    fun `should check page size`() {
+        // Given
+        val testCases = listOf(
+                IntCase(-5, false),
+                IntCase(0, false),
+                IntCase(1, true),
+                IntCase(100, true),
+                IntCase(150, false)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkPageSize", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
+    fun `should check email`() {
+        // Given
+        val testCases = listOf(
+                StringCase("", false),
+                StringCase("${"X".repeat(100)}@mail.com", false),
+                StringCase("blalba.net", false),
+                StringCase("normal@email.com", true)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkEmail", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
+    fun `should check nickname`() {
+        // Given
+        val testCases = listOf(
+                StringCase("Loupa", true),
+                StringCase("", false),
+                StringCase("Poupa".repeat(7), false)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkNickname", vResult, it.value)
             assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
         }
     }

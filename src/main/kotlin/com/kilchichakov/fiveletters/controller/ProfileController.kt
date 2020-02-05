@@ -7,6 +7,7 @@ import com.kilchichakov.fiveletters.controller.ControllerUtils.processAndRespond
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import com.kilchichakov.fiveletters.model.dto.WhoAmIResponse
+import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,6 +23,9 @@ class ProfileController {
     @Autowired
     private lateinit var userService: UserService
 
+    @Autowired
+    private lateinit var inputValidationService: InputValidationService
+
     @GetMapping
     @Logged
     fun whoAmI(): WhoAmIResponse {
@@ -36,6 +40,7 @@ class ProfileController {
     @Logged
     fun updateProfile(@RequestBody request: UpdateProfileRequest): OperationCodeResponse {
         return processAndRespondCode {
+            inputValidationService.validate(request)
             LOG.info { "asked to update userData - $request" }
             userService.updateUserData(it!!, request.email, request.nickname)
         }.logResult()

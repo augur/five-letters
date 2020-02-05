@@ -62,7 +62,10 @@ internal class ProfileControllerTest : ControllerTestSuite() {
 
         // Then
         actual.code toBe ErrorCode.NO_ERROR.numeric
-        verify { userService.updateUserData(LOGIN, email, nick) }
-        confirmVerified(userService)
+        verify {
+            inputValidationService.validate(request)
+            userService.updateUserData(LOGIN, email, nick)
+        }
+        confirmVerified(inputValidationService, userService)
     }
 }

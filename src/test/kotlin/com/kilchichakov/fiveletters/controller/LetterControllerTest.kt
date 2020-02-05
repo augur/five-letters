@@ -122,9 +122,10 @@ internal class LetterControllerTest : ControllerTestSuite() {
         // Then
         assertThat(actual.elements).containsExactly(expected)
         verify {
+            inputValidationService.validate(request)
             letterService.getInboxPage(LOGIN, request)
         }
-        confirmVerified(letterService)
+        confirmVerified(inputValidationService, letterService)
     }
 
     @Test

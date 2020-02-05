@@ -16,7 +16,6 @@ object ControllerUtils {
                 .also { LOG.info { "user: $it" }  }
     }
 
-
     fun processAndRespondCode(authorized: Boolean = true, block: (String?) -> Unit): OperationCodeResponse {
         return try {
             val login = if (authorized) getLogin() else null
@@ -28,7 +27,6 @@ object ControllerUtils {
             OperationCodeResponse(GENERIC_ERROR.numeric, e.message)
         }
     }
-
 }
 
 fun <T> T.logResult(): T =

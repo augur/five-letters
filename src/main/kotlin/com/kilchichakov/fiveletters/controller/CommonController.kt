@@ -28,6 +28,7 @@ class CommonController(
     @Logged
     fun confirmEmail(@RequestParam code: String): String {
         LOG.info { "asked to confirmEmail with code $code" }
+        //TODO validate single passCode parameter
         emailService.confirmEmailByCode(code)
         return "Email has been confirmed successfully!"
     }
