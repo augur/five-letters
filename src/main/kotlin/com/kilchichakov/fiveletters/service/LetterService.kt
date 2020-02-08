@@ -54,8 +54,8 @@ class LetterService {
     }
 
     fun getFutureLetters(login: String): List<SealedLetterEnvelop> {
-        LOG.info { "getting future letters for user $login, limit 30" }
-        return letterRepository.getFutureLetters(login, 30)
+        LOG.info { "getting future letters for user $login, limit 5000" }
+        return letterRepository.getFutureLetters(login, 5000)
     }
 
     fun markLetterAsRead(login: String, letterId: String) {

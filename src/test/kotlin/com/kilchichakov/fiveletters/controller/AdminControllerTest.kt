@@ -6,7 +6,7 @@ import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
 import com.kilchichakov.fiveletters.service.UserService
-import com.mongodb.client.MongoDatabase
+import dev.ktobe.toBeEqual
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -14,7 +14,6 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -60,7 +59,7 @@ class AdminControllerTest : ControllerTestSuite() {
         val actual = controller.generateOneTimePassCode(seconds)
 
         // Then
-        assertThat(actual).isEqualTo(passCode)
+        actual toBeEqual passCode
         verify { passCodeService.generateOneTimePassCode(seconds) }
         confirmVerified(passCodeService)
     }
