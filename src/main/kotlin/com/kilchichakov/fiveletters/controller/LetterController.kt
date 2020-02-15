@@ -53,15 +53,6 @@ class LetterController {
                 .logResult()
     }
 
-    @GetMapping("/new")
-    @Logged
-    fun getNewLetters(): GetNewLettersResponse {
-        LOG.info { "asked to get new letters" }
-        val letters = letterService.getNewLetters(getLogin()!!)
-        return GetNewLettersResponse(letters.map { LetterDto(it._id!!.toString(), it.sendDate, it.message, it.read, it.mailSent, it.archived) })
-                .logResult()
-    }
-
     @PostMapping("/inbox")
     @Logged
     fun getInboxPage(@RequestBody request: PageRequest): Page<LetterDto> {
@@ -70,7 +61,7 @@ class LetterController {
         LOG.info { "asked to get inbox page, request $request" }
         val page = letterService.getInboxPage(login, request)
         return Page(
-                page.elements.map { LetterDto(it._id!!.toString(), it.sendDate, it.message, it.read, it.mailSent, it.archived) },
+                page.elements.map { LetterDto(it._id!!.toString(), it.sendDate, it.openDate, it.message, it.read, it.mailSent, it.archived) },
                 pageNumber = page.pageNumber,
                 pageSize = page.pageSize,
                 total = page.total

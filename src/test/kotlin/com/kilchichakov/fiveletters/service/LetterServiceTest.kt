@@ -227,17 +227,18 @@ internal class LetterServiceTest {
                 pageSize = 20,
                 includeRead = true,
                 includeMailed = false,
-                includeArchived = true
+                includeArchived = true,
+                sortBy = "poupa"
         )
         val expected = mockk<Page<Letter>>()
-        every { letterRepository.inbox(any(), any(), any(), any(), any(), any()) } returns expected
+        every { letterRepository.inbox(any(), any(), any(), any(), any(), any(), any()) } returns expected
 
         // When
         val actual = service.getInboxPage(login, request)
 
         // Then
         assertThat(actual).isEqualTo(expected)
-        verify { letterRepository.inbox(login, 40, 20, includeRead = true, includeMailed = false, includeArchived = true) }
+        verify { letterRepository.inbox(login, 40, 20, includeRead = true, includeMailed = false, includeArchived = true, sortBy = "poupa") }
         confirmVerified(letterRepository)
     }
 

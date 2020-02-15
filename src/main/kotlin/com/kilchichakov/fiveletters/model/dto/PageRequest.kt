@@ -5,5 +5,6 @@ data class PageRequest(
         val pageSize: Int,
         val includeRead: Boolean,
         val includeMailed: Boolean,
-        val includeArchived: Boolean
+        val includeArchived: Boolean,
+        val sortBy: String? = null
 )

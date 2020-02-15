@@ -112,13 +112,15 @@ internal class InputValidationServiceTest {
         val spy = spyk(service, recordPrivateCalls = true)
         every { spy["checkPageNumber"](any<ValidationResult>(), any<Int>()) } returns 0
         every { spy["checkPageSize"](any<ValidationResult>(), any<Int>()) } returns 0
+        every { spy["checkInboxSortBy"](any<ValidationResult>(), any<String>()) } returns 0
 
         // When
-        spy.validate(PageRequest(pageNumber, pageSize, includeRead = true, includeMailed = false, includeArchived = true))
+        spy.validate(PageRequest(pageNumber, pageSize, includeRead = true, includeMailed = false, includeArchived = true, sortBy = "poupa"))
 
         // Then
         verify { spy["checkPageNumber"](any<ValidationResult>(), pageNumber) }
         verify { spy["checkPageSize"](any<ValidationResult>(), pageSize) }
+        verify { spy["checkInboxSortBy"](any<ValidationResult>(), "poupa") }
     }
 
     @Test
@@ -280,6 +282,25 @@ internal class InputValidationServiceTest {
     }
 
     @Test
+    fun `should check inbox sortBy`() {
+        // Given
+        val testCases = listOf(
+                TestCase("", false),
+                TestCase(null, true),
+                TestCase("sendDate", true),
+                TestCase("openDate", true),
+                TestCase("login", false)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkInboxSortBy", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
     fun `should check email`() {
         // Given
         val testCases = listOf(
@@ -313,6 +334,8 @@ internal class InputValidationServiceTest {
             assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
         }
     }
+
+    data class TestCase<T>(val value: T?, val valid: Boolean)
 
     data class StringCase(val value: String, val valid: Boolean)
 

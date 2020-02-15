@@ -192,15 +192,32 @@ internal class LetterRepositoryTest : MongoTestSuite() {
         listOf(expectedThird, expectedFirst, expectedSecond, skipped, outLimit, anotherLogin, read, mailed, archived, notReady)
                 .forEach(repository::saveNewLetter)
 
-        // When
-        val actual = repository.inbox(login, skip, limit, includeRead = false, includeMailed = false, includeArchived = false)
+        val testCases = listOf(
+                TestCase(
+                        action = { repository.inbox(login, skip, limit, includeRead = false, includeMailed = false, includeArchived = false) },
+                        assert = { assertThat(it.elements).containsExactly(expectedFirst, expectedSecond, expectedThird) }
+                ),
+                TestCase(
+                        action = { repository.inbox(login, skip, limit, includeRead = false, includeMailed = false, includeArchived = false, sortBy = "sendDate") },
+                        assert = { assertThat(it.elements).containsExactly(skipped, expectedFirst, expectedSecond) }
+                )
+        )
 
-        // Then
-        assertThat(actual.elements).containsExactly(expectedFirst, expectedSecond, expectedThird)
-        assertThat(actual.pageNumber).isEqualTo(1)
-        assertThat(actual.pageSize).isEqualTo(3)
-        assertThat(actual.total).isEqualTo(5)
+        // When
+        testCases.forEach {
+            val actual = it.action()
+            //Then
+            it.assert(actual)
+            assertThat(actual.pageNumber).isEqualTo(1)
+            assertThat(actual.pageSize).isEqualTo(3)
+            assertThat(actual.total).isEqualTo(5)
+        }
     }
+
+    data class TestCase<ACTUAL>(
+            val action: () -> ACTUAL,
+            val assert: (ACTUAL) -> Unit
+    )
 
     private fun getDateTime(s: String): Date {
         val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")

@@ -60,6 +60,7 @@ class InputValidationService {
         validation(pageRequest) {
             checkPageNumber(pageRequest.pageNumber)
             checkPageSize(pageRequest.pageSize)
+            checkInboxSortBy(pageRequest.sortBy)
         }
     }
 
@@ -115,7 +116,11 @@ class InputValidationService {
     private fun ValidationResult.checkPageSize(pageSize: Int) {
         if (pageSize < 1) errors.add(ValidationError("pageSize", "is less than 1"))
         if (pageSize > 100) errors.add(ValidationError("pageSize", "is too big"))
+    }
 
+    private val enabledSorts = setOf("sendDate", "openDate")
+    private fun ValidationResult.checkInboxSortBy(field: String?) {
+        if (field != null && !enabledSorts.contains(field)) errors.add(ValidationError("sortBy", "is invalid"))
     }
 
     private fun ValidationResult.checkEmail(email: String) {

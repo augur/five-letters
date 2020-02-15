@@ -91,14 +91,19 @@ class LetterRepository(
     }
 
     fun inbox(login: String, skip: Int, limit: Int,
-              includeRead: Boolean, includeMailed: Boolean, includeArchived: Boolean): Page<Letter> {
+              includeRead: Boolean, includeMailed: Boolean, includeArchived: Boolean,
+              sortBy: String? = null): Page<Letter> {
         LOG.info { "load inbox letters for $login" }
         var filter = and(Letter::login eq login, Letter::openDate lte clock.now())
         if (!includeRead) filter = and(filter, Letter::read ne true)
         if (!includeMailed) filter = and(filter, Letter::mailSent ne true)
         if (!includeArchived) filter = and(filter, Letter::archived ne true)
 
-        val sorted = descending(Letter::openDate, Letter::sendDate)
+        val sorted = when(sortBy) {
+            "openDate" -> descending(Letter::openDate, Letter::sendDate)
+            "sendDate" -> descending(Letter::sendDate, Letter::openDate)
+            else -> descending(Letter::openDate, Letter::sendDate)
+        }
 
         val found = collection.find(filter)
         val total = found.count()

@@ -17,13 +17,9 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkAll
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.bson.types.ObjectId
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Instant
@@ -80,29 +76,6 @@ internal class LetterControllerTest : ControllerTestSuite() {
     }
 
     @Test
-    fun `should get new letters`() {
-        // Given
-        val hexString = "5d581a125d9f6680329c6f85"
-        val message = "some message"
-        val sendDate = Date.from(Instant.ofEpochMilli(100500))
-        val openDate = Date.from(Instant.ofEpochMilli(100600))
-        val letter = Letter(ObjectId(hexString), LOGIN, message, true, sendDate, openDate)
-        every { letterService.getNewLetters(LOGIN) } returns listOf(letter)
-
-        // When
-        val actual = controller.getNewLetters()
-
-        // Then
-        assertThat(actual.letters).containsExactly(LetterDto(hexString, sendDate, message, read = true, mailed = false, archived = false))
-
-        verify {
-            ControllerUtils.getLogin()
-            letterService.getNewLetters(LOGIN)
-        }
-        confirmVerified(letterService)
-    }
-
-    @Test
     fun `should request inbox page`() {
         // Given
         val request = mockk<PageRequest>()
@@ -111,7 +84,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val sendDate = Date.from(Instant.ofEpochMilli(100500))
         val openDate = Date.from(Instant.ofEpochMilli(100600))
         val letter = Letter(ObjectId(hexString), LOGIN, message, true, sendDate, openDate)
-        val expected = LetterDto(hexString, sendDate, message, read = true, mailed = false, archived = false)
+        val expected = LetterDto(hexString, sendDate, openDate, message, read = true, mailed = false, archived = false)
         val page = Page(listOf(letter), 1,2, 3)
 
         every { letterService.getInboxPage(any(), any()) } returns page

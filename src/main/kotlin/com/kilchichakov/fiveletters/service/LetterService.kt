@@ -44,7 +44,8 @@ class LetterService {
                 limit = pageRequest.pageSize,
                 includeRead = pageRequest.includeRead,
                 includeMailed = pageRequest.includeMailed,
-                includeArchived = pageRequest.includeArchived
+                includeArchived = pageRequest.includeArchived,
+                sortBy = pageRequest.sortBy
         )
     }
 
