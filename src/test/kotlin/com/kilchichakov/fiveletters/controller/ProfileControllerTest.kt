@@ -6,6 +6,7 @@ import com.kilchichakov.fiveletters.model.UserData
 import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import com.kilchichakov.fiveletters.service.UserService
 import dev.ktobe.toBe
+import dev.ktobe.toBeEqual
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -13,7 +14,6 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -39,9 +39,9 @@ internal class ProfileControllerTest : ControllerTestSuite() {
         val actual = controller.whoAmI()
 
         // Then
-        assertThat(actual.nickname).isEqualTo(nick)
-        assertThat(actual.email).isEqualTo(email)
-        assertThat(actual.emailConfirmed).isTrue()
+        actual.nickname toBeEqual nick
+        actual.email toBeEqual email
+        actual.emailConfirmed toBe true
         verify {
             userService.loadUserData(LOGIN)
         }

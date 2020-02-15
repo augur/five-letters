@@ -4,12 +4,12 @@ import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
 import com.kilchichakov.fiveletters.service.UserService
+import dev.ktobe.toBeEqual
 import io.mockk.confirmVerified
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -36,7 +36,7 @@ class RegisterControllerTest : ControllerTestSuite() {
         val actual = controller.register(request)
 
         // Then
-        assertThat(actual).isEqualTo(OperationCodeResponse(0))
+        actual toBeEqual OperationCodeResponse(0)
         verify(exactly = 0) { ControllerUtils.getLogin() }
         verify {
             inputValidationService.validate(request)

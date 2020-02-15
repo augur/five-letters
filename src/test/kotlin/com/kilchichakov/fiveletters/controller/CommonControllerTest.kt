@@ -2,6 +2,8 @@ package com.kilchichakov.fiveletters.controller
 
 import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.service.EmailService
+import dev.ktobe.notToBe
+import dev.ktobe.toBeEqual
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -10,7 +12,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.runs
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -38,7 +39,7 @@ internal class CommonControllerTest : ControllerTestSuite() {
         val actual = controller.getVersion()
 
         // Then
-        assertThat(actual).isEqualTo(VERSION)
+        actual toBeEqual VERSION
     }
 
     @Test
@@ -51,7 +52,7 @@ internal class CommonControllerTest : ControllerTestSuite() {
         val actual = controller.confirmEmail(code)
 
         // Then
-        assertThat(actual).isNotNull()
+        actual notToBe null
         verify { emailService.confirmEmailByCode(code) }
         confirmVerified(emailService)
     }

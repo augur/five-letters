@@ -4,25 +4,16 @@ import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.AuthResponse
 import com.kilchichakov.fiveletters.service.AuthService
-import com.kilchichakov.fiveletters.service.InputValidationService
-import io.mockk.clearStaticMockk
+import dev.ktobe.toBeEqual
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.verify
-import jdk.internal.util.xml.impl.Input
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
 
 
 @ExtendWith(MockKExtension::class)
@@ -50,7 +41,7 @@ internal class AuthControllerTest : ControllerTestSuite() {
         val actual = authController.authenticate(request)
 
         // Then
-        assertThat(actual).isEqualTo(expected)
+        actual toBeEqual expected
         verify {
             inputValidationService.validate(request)
             authService.authenticate(someLogin, somePassword)

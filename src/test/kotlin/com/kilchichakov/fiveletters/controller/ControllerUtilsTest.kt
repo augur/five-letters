@@ -2,6 +2,8 @@ package com.kilchichakov.fiveletters.controller
 
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.ErrorCode
+import dev.ktobe.toBe
+import dev.ktobe.toBeEqual
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
@@ -9,7 +11,6 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,7 +49,7 @@ internal class ControllerUtilsTest {
         val actual = utils.getLogin()
 
         // Then
-        assertThat(actual).isEqualTo(LOGIN)
+        actual toBe LOGIN
     }
 
     @Test
@@ -60,7 +61,7 @@ internal class ControllerUtilsTest {
         val actual = utils.processAndRespondCode(block = block)
 
         // Then
-        assertThat(actual.code).isEqualTo(ErrorCode.NO_ERROR.numeric)
+        actual.code toBeEqual ErrorCode.NO_ERROR.numeric
         verify { block(LOGIN) }
         confirmVerified(block)
     }
@@ -74,7 +75,7 @@ internal class ControllerUtilsTest {
         val actual = utils.processAndRespondCode(false, block)
 
         // Then
-        assertThat(actual.code).isEqualTo(ErrorCode.NO_ERROR.numeric)
+        actual.code toBeEqual ErrorCode.NO_ERROR.numeric
         verify { block(null) }
         confirmVerified(block)
     }
@@ -89,7 +90,7 @@ internal class ControllerUtilsTest {
         val actual = utils.processAndRespondCode(false, block)
 
         // Then
-        assertThat(actual.code).isEqualTo(ErrorCode.DB.numeric)
+        actual.code toBeEqual ErrorCode.DB.numeric
         verify { block(null) }
         confirmVerified(block)
     }
@@ -104,7 +105,7 @@ internal class ControllerUtilsTest {
         val actual = utils.processAndRespondCode(false, block)
 
         // Then
-        assertThat(actual.code).isEqualTo(ErrorCode.GENERIC_ERROR.numeric)
+        actual.code toBeEqual ErrorCode.GENERIC_ERROR.numeric
         verify { block(null) }
         confirmVerified(block)
     }

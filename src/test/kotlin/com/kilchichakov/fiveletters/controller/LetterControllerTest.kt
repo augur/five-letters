@@ -11,6 +11,9 @@ import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.TimePeriodService
+import dev.ktobe.toBeEqual
+import dev.ktobe.toContainExactly
+import dev.ktobe.toContainJust
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -50,7 +53,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val actual = controller.send(request)
 
         // Then
-        assertThat(actual).isEqualTo(OperationCodeResponse(0))
+        actual toBeEqual OperationCodeResponse(0)
         verify {
             ControllerUtils.getLogin()
             inputValidationService.validate(request)
@@ -70,7 +73,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val actual = controller.getTimePeriods()
 
         // Then
-        assertThat(actual.periods).isEqualTo(periods)
+        actual.periods toBeEqual periods
         verify { timePeriodService.listAllTimePeriods() }
         confirmVerified(timePeriodService)
     }
@@ -93,7 +96,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val actual = controller.getInboxPage(request)
 
         // Then
-        assertThat(actual.elements).containsExactly(expected)
+        actual.elements toContainJust expected
         verify {
             inputValidationService.validate(request)
             letterService.getInboxPage(LOGIN, request)
@@ -112,7 +115,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val actual = controller.getFutureLetters()
 
         // Then
-        assertThat(actual.letters).containsExactly(envelop)
+        actual.letters toContainJust envelop
 
         verify {
             ControllerUtils.getLogin()
@@ -130,7 +133,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         val actual = controller.markAsRead(id)
 
         // Then
-        assertThat(actual.code).isEqualTo(ErrorCode.NO_ERROR.numeric)
+        actual.code toBeEqual ErrorCode.NO_ERROR.numeric
         verify { letterService.markLetterAsRead(LOGIN, id) }
         confirmVerified(letterService)
     }
