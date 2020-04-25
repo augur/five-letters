@@ -22,6 +22,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -30,7 +31,6 @@ import java.time.Instant
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
-
 
 @ExtendWith(MockKExtension::class)
 internal class LetterServiceTest {
@@ -47,11 +47,6 @@ internal class LetterServiceTest {
     @InjectMockKs
     lateinit var service: LetterService
 
-    @AfterEach
-    fun tearDown() {
-        unmockkAll()
-    }
-
     @Test
     fun `should send a letter`() {
         // Given
@@ -65,7 +60,7 @@ internal class LetterServiceTest {
 
         val spy = spyk(service, recordPrivateCalls = true)
         every { timePeriodService.getTimePeriod(any()) } returns period
-        every { spy["calcOpenDate"](any<TimePeriod>(), any<Int>()) } returns date
+        every { spy["calcOpenDate"](any<TimePeriod>(), any<Int>(), any<Calendar>()) } returns date
         every { letterRepository.saveNewLetter(capture(slot)) } just Runs
 
         // When
@@ -190,19 +185,12 @@ internal class LetterServiceTest {
     @Test
     fun `should calc open date correctly`() {
         // Given
-        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-        calendar.time = Date.from(instant) // Sat Sep 14 2019 10:51:49 UTC
-
         val weekPeriod = TimePeriod("WEEK", 0, 1, 0, 0, true)
         val monthPeriod = TimePeriod("MONTH", 0, 0, 1, 0, true)
         val month3Period = TimePeriod("THREE_MONTHS", 0, 0, 3, 0, true)
         val yearPeriod = TimePeriod("YEAR", 0, 0, 0, 1, true)
         val year3Period = TimePeriod("THREE_YEARS", 0, 0, 0, 3, true)
 
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance(TimeZone.getTimeZone("UTC")) } answers {
-            calendar.clone() as Calendar
-        }
         val cases = listOf(
                 CalcDateCase(weekPeriod, -180, Date.from(Instant.ofEpochMilli(1569013200000))),
                 CalcDateCase(monthPeriod, -180, Date.from(Instant.ofEpochMilli(1571000400000))),
@@ -213,7 +201,9 @@ internal class LetterServiceTest {
 
         // When
         cases.forEach { case ->
-            val actual = service.calcOpenDate(case.period, case.offset)
+            val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            calendar.time = Date.from(instant)
+            val actual = service.calcOpenDate(case.period, case.offset, calendar)
             assertThat(actual).isEqualTo(case.expected)
         }
     }

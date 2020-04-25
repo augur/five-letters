@@ -16,7 +16,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @SpringBootTest
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class FiveLettersApplicationTest {
 
 	@Test

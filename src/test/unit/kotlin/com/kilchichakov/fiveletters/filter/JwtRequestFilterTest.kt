@@ -24,6 +24,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
+import java.time.Instant
+import java.util.Date
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -57,7 +59,7 @@ internal class JwtRequestFilterTest {
         val response = mockk<HttpServletResponse>(relaxed = true)
         val chain = mockk<FilterChain>(relaxed = true)
         val token = "Bearer loupeaux"
-        val decodedJwt = JwtService.DecodedJwt("loupa", listOf("poupa"))
+        val decodedJwt = JwtService.DecodedJwt("loupa", listOf("poupa"), Date.from(Instant.now()))
         val slot = slot<UsernamePasswordAuthenticationToken>()
 
         every { request.getHeader(any()) } returns token
@@ -105,7 +107,7 @@ internal class JwtRequestFilterTest {
         val response = mockk<HttpServletResponse>(relaxed = true)
         val chain = mockk<FilterChain>(relaxed = true)
         val token = "Bearer loupeaux"
-        val decodedJwt = JwtService.DecodedJwt("loupa", listOf("poupa"))
+        val decodedJwt = JwtService.DecodedJwt("loupa", listOf("poupa"), Date.from(Instant.now()))
         val authentication = mockk<Authentication>()
 
         every { request.getHeader(any()) } returns token

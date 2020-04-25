@@ -3,17 +3,25 @@ package com.kilchichakov.fiveletters.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.util.now
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
+import java.time.Clock
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.Calendar
+import java.util.Date
+import java.util.concurrent.TimeUnit
 
 
 @Service
 class JwtService(
         @Value("\${JWT_SECRET}") secret: String,
         @Value("\${JWT_ISSUER}") private val issuer: String,
-        @Value("\${JWT_TTL}") private val ttlSeconds: Int
+        @Value("\${JWT_TTL}") private val ttlSeconds: Long,
+        private val clock: Clock
 ) {
 
     private val algorithm = Algorithm.HMAC256(secret)
@@ -24,14 +32,13 @@ class JwtService(
 
 
     fun generateToken(userDetails: UserDetails): String {
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.SECOND, ttlSeconds)
+        val expires = Date.from(clock.instant().plus(ttlSeconds, ChronoUnit.SECONDS))
         val roles = (userDetails.authorities.map { a -> a.authority }).toTypedArray()
-        LOG.info { "generating token: ${userDetails.username}, $issuer, ${calendar.time}, $algorithm, ${roles.toList()}" }
+        LOG.info { "generating token: ${userDetails.username}, $issuer, ${expires}, $algorithm, ${roles.toList()}" }
         return JWT.create()
                 .withIssuer(issuer)
                 .withSubject(userDetails.username)
-                .withExpiresAt(calendar.time)
+                .withExpiresAt(expires)
                 .withArrayClaim("roles", roles)
                 .sign(algorithm)
     }
@@ -43,15 +50,16 @@ class JwtService(
         return try {
             val jwt = verifier.verify(token)!!
             val roles = jwt.getClaim("roles").asList(String::class.java).orEmpty()
-            DecodedJwt(jwt.subject, roles)
+            DecodedJwt(jwt.subject, roles, jwt.expiresAt)
         } catch (e : Exception) {
             LOG.error(e) { "caught during token $token validation" }
-            DecodedJwt(null, emptyList())
+            DecodedJwt(null, emptyList(), Date.from(Instant.EPOCH))
         }
     }
 
     data class DecodedJwt(
             val username: String?,
-            val roles: List<String>
+            val roles: List<String>,
+            val expiresAt: Date
     )
 }

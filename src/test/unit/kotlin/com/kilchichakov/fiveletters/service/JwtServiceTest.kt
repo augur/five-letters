@@ -1,40 +1,32 @@
 package com.kilchichakov.fiveletters.service
 
 import io.mockk.every
-import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkAll
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
-import java.util.Calendar
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Date
 
 @ExtendWith(MockKExtension::class)
 internal class JwtServiceTest {
 
-    @RelaxedMockK
-    lateinit var calendar: Calendar
+    // Sat Sep 14 2019 10:51:49 UTC
+    private val instant = Instant.ofEpochMilli(12568458309000)
+    private val clock: Clock = Clock.fixed(instant, ZoneId.of("Indian/Maldives"))
 
     lateinit var service: JwtService
 
     @BeforeEach
     fun setUp() {
-        service = JwtService("secret", "issuer", 42)
-        mockkStatic(Calendar::class)
-        every { Calendar.getInstance() } returns calendar
-    }
-
-    @AfterEach
-    fun tearDown() {
-        unmockkAll()
+        service = JwtService("secret", "issuer", 42, clock)
     }
 
     @Test
@@ -47,7 +39,6 @@ internal class JwtServiceTest {
         val userDetails = mockk<UserDetails>()
         every { userDetails.username } returns user
         every { userDetails.authorities } returns authorities
-        every { calendar.time } returns Date()
 
         // When
         val token = service.generateToken(userDetails)
@@ -55,14 +46,13 @@ internal class JwtServiceTest {
 
         // Then
         verify {
-            Calendar.getInstance()
             userDetails.username
             userDetails.authorities
-            calendar.time
         }
 
         assertThat(validated.username).isEqualTo(user)
         assertThat(validated.roles).containsExactlyInAnyOrder("loupa", "poupa")
+        assertThat(validated.expiresAt).isEqualTo(Date.from(Instant.ofEpochMilli(12568458309000 + 42 * 1000)))
     }
 
     @Test()

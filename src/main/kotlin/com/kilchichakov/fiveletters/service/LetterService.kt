@@ -25,7 +25,9 @@ class LetterService {
 
     fun sendLetter(login: String, message: String, periodName: String, timezoneOffset: Int) {
         val period = timePeriodService.getTimePeriod(periodName)
-        val letter = Letter(null, login, message, false, Calendar.getInstance().time, calcOpenDate(period, timezoneOffset))
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        val letter = Letter(null, login, message, false, Calendar.getInstance().time,
+                calcOpenDate(period, timezoneOffset, calendar))
         LOG.info { "sending letter $letter" }
         letterRepository.saveNewLetter(letter)
         LOG.info { "sent" }
@@ -73,8 +75,7 @@ class LetterService {
         }
     }
 
-    internal fun calcOpenDate(period: TimePeriod, timezoneOffset: Int): Date {
-        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+    internal fun calcOpenDate(period: TimePeriod, timezoneOffset: Int, calendar: Calendar): Date {
         //calendar.time = SimpleDateFormat("YYYY-MM-dd").parse("2018-12-31")
         with(period) {
             calendar.add(Calendar.DAY_OF_YEAR, days)

@@ -8,6 +8,7 @@ val assertJVersion = "3.11.1"
 val embeddedMongoVersion = "2.2.0"
 val muLoggingVersion = "1.5.9"
 val slf4jVersion = "1.7.5"
+val springMockkVersion = "2.0.1"
 
 plugins {
 	id("org.springframework.boot") version "2.2.4.RELEASE"
@@ -59,6 +60,7 @@ dependencies {
 
 	testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:$embeddedMongoVersion")
 	testImplementation("org.assertj:assertj-core:$assertJVersion")
+	testImplementation("com.ninja-squad:springmockk:$springMockkVersion")
 }
 
 tasks.withType<KotlinCompile> {
