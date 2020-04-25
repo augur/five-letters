@@ -18,7 +18,7 @@ plugins {
 }
 
 group = "com.kilchichakov"
-version = "20.2.3"
+version = "20.5.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -45,7 +45,7 @@ dependencies {
 	implementation("org.slf4j:slf4j-api:$slf4jVersion")
 	//implementation("org.slf4j:slf4j-log4j12:$slf4jVersion")
 
-	testImplementation("dev.ktobe:ktobe:0.1.0-SNAPSHOT")
+	testImplementation("dev.ktobe:ktobe:0.0.1")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("io.mockk:mockk:$mockkioVersion")
@@ -65,6 +65,23 @@ tasks.withType<KotlinCompile> {
 	kotlinOptions {
 		freeCompilerArgs = listOf("-Xjsr305=strict")
 		jvmTarget = "1.8"
+	}
+}
+
+tasks.test {
+	useJUnitPlatform()
+
+	maxHeapSize = "1G"
+	exclude("**/*RepositoryTest*")
+}
+
+sourceSets {
+	test {
+		java {
+			srcDir("src/test/unit/kotlin")
+			srcDir("src/test/integration/kotlin")
+			srcDir("src/test/mongo/kotlin")
+		}
 	}
 }
 

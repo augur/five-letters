@@ -8,11 +8,9 @@ import com.kilchichakov.fiveletters.model.dto.RegisterRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import com.kilchichakov.fiveletters.service.InputValidationService.*
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.junit5.MockKExtension
-import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat

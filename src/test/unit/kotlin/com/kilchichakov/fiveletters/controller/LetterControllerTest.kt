@@ -12,7 +12,6 @@ import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.TimePeriodService
 import dev.ktobe.toBeEqual
-import dev.ktobe.toContainExactly
 import dev.ktobe.toContainJust
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -21,7 +20,6 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.bson.types.ObjectId
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

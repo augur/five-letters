@@ -3,7 +3,6 @@ package com.kilchichakov.fiveletters.service.job
 import com.kilchichakov.fiveletters.model.Email
 import com.kilchichakov.fiveletters.model.job.EmailConfirmSendingJobPayload
 import com.kilchichakov.fiveletters.service.MailSenderService
-import com.kilchichakov.fiveletters.setPrivate
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK

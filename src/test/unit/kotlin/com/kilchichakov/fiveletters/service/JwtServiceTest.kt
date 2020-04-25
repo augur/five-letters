@@ -41,7 +41,7 @@ internal class JwtServiceTest {
     fun `should generate and then validate token`() {
         // Given
         val user = "loupeaux"
-        val authorities = listOf(SimpleGrantedAuthority("loupa"),
+        val authorities = mutableListOf(SimpleGrantedAuthority("loupa"),
                 SimpleGrantedAuthority("poupa"))
 
         val userDetails = mockk<UserDetails>()
