@@ -19,13 +19,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FiveLettersApplicationTest {
 
-	@BeforeAll
-	fun setUp() {
-		clearAllMocks()
-		unmockkAll()
-		отключать тесты по очереди
-	}
-
 	@Test
 	fun contextLoads() {
 	}

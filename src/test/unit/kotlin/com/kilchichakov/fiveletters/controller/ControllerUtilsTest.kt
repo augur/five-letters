@@ -4,18 +4,22 @@ import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.exception.ErrorCode
 import dev.ktobe.toBe
 import dev.ktobe.toBeEqual
+import io.mockk.clearStaticMockk
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 
 
@@ -30,17 +34,16 @@ internal class ControllerUtilsTest {
     fun setUp() {
         // Given
         val someName = LOGIN
-        mockkStatic(SecurityContextHolder::class)
         val token = mockk<UsernamePasswordAuthenticationToken> {
             every { name } returns someName
         }
-        every { SecurityContextHolder.getContext().authentication } returns token
-
+        val context = mockk<SecurityContext>()
+        every { context.authentication } returns token
+        SecurityContextHolder.setContext(context)
     }
 
-    @AfterEach
     fun tearDown() {
-        unmockkAll()
+        SecurityContextHolder.clearContext()
     }
 
     @Test

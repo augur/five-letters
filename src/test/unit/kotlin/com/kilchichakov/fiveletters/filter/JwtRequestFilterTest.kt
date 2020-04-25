@@ -34,17 +34,20 @@ internal class JwtRequestFilterTest {
     @RelaxedMockK
     lateinit var jwtService: JwtService
 
+    @RelaxedMockK
+    lateinit var securityContext: SecurityContext
+
     @InjectMockKs
     lateinit var filter: JwtRequestFilter
 
     @BeforeEach
     fun setUp() {
-        mockkStatic(SecurityContextHolder::class)
+        SecurityContextHolder.setContext(securityContext)
     }
 
     @AfterEach
     fun tearDown() {
-        unmockkAll()
+        SecurityContextHolder.clearContext()
     }
 
     @Test
@@ -59,8 +62,8 @@ internal class JwtRequestFilterTest {
 
         every { request.getHeader(any()) } returns token
         every { jwtService.validateToken(any()) } returns decodedJwt
-        every { SecurityContextHolder.getContext().authentication } returns null
-        every { SecurityContextHolder.getContext().setAuthentication(capture(slot)) } just Runs
+        every { securityContext.authentication } returns null
+        every { securityContext.setAuthentication(capture(slot)) } just Runs
 
         // When
         filter.invokePrivate("doFilterInternal", request, response, chain)
@@ -103,13 +106,11 @@ internal class JwtRequestFilterTest {
         val chain = mockk<FilterChain>(relaxed = true)
         val token = "Bearer loupeaux"
         val decodedJwt = JwtService.DecodedJwt("loupa", listOf("poupa"))
-        val context = mockk<SecurityContext>()
         val authentication = mockk<Authentication>()
 
         every { request.getHeader(any()) } returns token
         every { jwtService.validateToken(any()) } returns decodedJwt
-        every { SecurityContextHolder.getContext() } returns context
-        every { context.authentication } returns authentication
+        every { securityContext.authentication } returns authentication
 
         // When
         filter.invokePrivate("doFilterInternal", request, response, chain)
@@ -121,7 +122,7 @@ internal class JwtRequestFilterTest {
             chain.doFilter(request, response)
         }
         verify(exactly = 0) {
-            context.setAuthentication(any())
+            securityContext.setAuthentication(any())
         }
         confirmVerified(jwtService, chain, response)
     }
