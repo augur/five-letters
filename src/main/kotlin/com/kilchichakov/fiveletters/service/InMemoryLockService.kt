@@ -1,6 +1,5 @@
 package com.kilchichakov.fiveletters.service
 
-import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.model.InMemoryLock
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -13,7 +12,7 @@ class InMemoryLockService : LockService {
 
     val locks = ConcurrentHashMap<Long, ReentrantLock>()
 
-    override fun tryLock(obj: Any): com.kilchichakov.fiveletters.model.Lock? {
+    override fun tryLock(obj: Any): MyLock? {
         val id = obj.hashCode().toLong()
         val lock = locks.computeIfAbsent(id) { ReentrantLock() }
         if (lock.tryLock()) {
@@ -26,6 +25,7 @@ class InMemoryLockService : LockService {
         val id = obj.hashCode().toLong()
         val lock = locks.computeIfAbsent(id) { ReentrantLock() }
         lock.lock()
+        locks[id] = lock
         return InMemoryLock(id, Instant.MAX)
     }
 
@@ -36,7 +36,6 @@ class InMemoryLockService : LockService {
 
     override fun unlock(lock: MyLock) {
         lock as InMemoryLock
-        val savedLock = locks[lock.id] ?: throw SystemStateException("lock $lock not found")
-        savedLock.unlock()
+        locks.remove(lock.id)?.unlock()
     }
 }
