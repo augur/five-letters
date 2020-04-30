@@ -5,6 +5,8 @@ import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.LetterStat
 import com.kilchichakov.fiveletters.model.LetterStatData
+import com.kilchichakov.fiveletters.service.findOneInTransaction
+import com.kilchichakov.fiveletters.service.updateOneInTransaction
 import com.mongodb.client.MongoDatabase
 import org.bson.conversions.Bson
 import org.litote.kmongo.and
@@ -24,7 +26,7 @@ class LetterStatDataRepository(
 
     fun getStatData(login: String): LetterStatData? {
         LOG.info { "loading letterStatData of $login" }
-        return collection.findOne(LetterStatData::login eq login)
+        return collection.findOneInTransaction(LetterStatData::login eq login, false)
                 .also { LOG.info { "found letterStatData $it" } }
     }
 
@@ -38,7 +40,7 @@ class LetterStatDataRepository(
                 setValue(LetterStatData::unorderedSent, emptyList())
         )
         val byLogin = LetterStatData::login eq login
-        val result = collection.updateOne(byLogin, update)
+        val result = collection.updateOneInTransaction(byLogin, update, true)
         LOG.info { "updated ${result.modifiedCount} Letter Stats" }
         return result.modifiedCount == 1L
     }
@@ -49,7 +51,7 @@ class LetterStatDataRepository(
                 push(LetterStatData::unorderedSent, sent),
                 push(LetterStatData::unorderedOpen, open)
         )
-        val result = collection.updateOne(byLogin, update)
+        val result = collection.updateOneInTransaction(byLogin, update, false)
         LOG.info { "updated ${result.modifiedCount} Letter Stats" }
         return result.modifiedCount == 1L
     }

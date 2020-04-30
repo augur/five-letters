@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.MongoTestSuite
 import com.kilchichakov.fiveletters.exception.DataException
+import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.LetterStat
 import com.kilchichakov.fiveletters.model.LetterStatData
@@ -43,16 +44,34 @@ internal class LetterStatDataRepositoryTest : MongoTestSuite() {
         val openStats = listOf(may1Stat, april15Stat)
 
         // When
-        val set = repository.setStatData(login, sentStats, openStats)
-        val actual = repository.getStatData(login)!!
+        transactionWrapper.executeInTransaction {
+            val set = repository.setStatData(login, sentStats, openStats)
+            val actual = repository.getStatData(login)!!
 
-        // Then
-        assertThat(set).isTrue()
-        assertThat(actual.login).isEqualTo(login)
-        assertThat(actual.sentStat).containsExactly(april1Stat, april10Stat)
-        assertThat(actual.openStat).containsExactly(april15Stat, may1Stat)
-        assertThat(actual.unorderedSent).isEmpty()
-        assertThat(actual.unorderedOpen).isEmpty()
+            // Then
+            assertThat(set).isTrue()
+            assertThat(actual.login).isEqualTo(login)
+            assertThat(actual.sentStat).containsExactly(april1Stat, april10Stat)
+            assertThat(actual.openStat).containsExactly(april15Stat, may1Stat)
+            assertThat(actual.unorderedSent).isEmpty()
+            assertThat(actual.unorderedOpen).isEmpty()
+        }
+    }
+
+    @Test
+    fun `should fail to setData without transaction`() {
+        // Given
+        val day1 = Day(2020, 1, 1)
+        val day2 = Day(2020, 1, 2)
+        collection.insertOne(LetterStatData(null, login, emptyList(), emptyList(), listOf(day1), listOf(day2)))
+        val sentStats = listOf(april10Stat, april1Stat)
+        val openStats = listOf(may1Stat, april15Stat)
+
+        // When
+        assertThatCode {
+            val set = repository.setStatData(login, sentStats, openStats)
+        }.isInstanceOf(DatabaseException::class.java)
+
     }
 
     @Test
@@ -62,10 +81,12 @@ internal class LetterStatDataRepositoryTest : MongoTestSuite() {
         val openStats = listOf(may1Stat, april15Stat)
 
         // When
-        val set = repository.setStatData(login, sentStats, openStats)
+        transactionWrapper.executeInTransaction {
+            val set = repository.setStatData(login, sentStats, openStats)
 
-        // The
-        assertThat(set).isFalse()
+            // The
+            assertThat(set).isFalse()
+        }
     }
 
     @Test
