@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.MongoTestSuite
 import com.kilchichakov.fiveletters.model.Letter
+import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.mongodb.client.MongoCollection
 import org.assertj.core.api.Assertions.assertThat
 import org.bson.types.ObjectId
@@ -125,6 +126,36 @@ internal class LetterRepositoryTest : MongoTestSuite() {
         assertThat(actual.map { it.sendDate }.toList()).containsExactly(expectedFirst.sendDate, expectedLast.sendDate)
     }
 
+    @Test
+    fun `should iterate all letters by user`() {
+        // Given
+        val sendDate1 = getDateTime("2015-02-16T21:00:00.000+01:00")
+        val sendDate2 = getDateTime("2015-02-17T21:00:00.000+01:00")
+        val sendDate3 = getDateTime("2015-02-18T21:00:00.000+01:00")
+        val sendDate4 = getDateTime("2015-02-19T21:00:00.000+01:00")
+        val login = "loupa"
+
+        val expected1 = Letter(null, login, "123", false, sendDate1, Date.from(instant.plusMillis(500)))
+        val expected2 = Letter(null, login, "123", false, sendDate2, Date.from(instant.plusMillis(100)))
+        val expected3 = Letter(null, login, "123", false, sendDate3, Date.from(instant.plusMillis(800)))
+        val anotherUser = Letter(null, "poupa", "123", false, sendDate4, Date.from(instant.plusMillis(100)))
+
+        // When
+        repository.saveNewLetter(expected1)
+        repository.saveNewLetter(expected2)
+        repository.saveNewLetter(expected3)
+        repository.saveNewLetter(anotherUser)
+        val stream = repository.iterateLettersDates(login)
+        val actual = ArrayList<SealedLetterEnvelop>()
+        stream.forEach { actual.add(it) }
+
+        // Then
+        assertThat(actual.map { it.sendDate to it.openDate }).containsExactlyInAnyOrder(
+                expected1.sendDate to expected1.openDate,
+                expected2.sendDate to expected2.openDate,
+                expected3.sendDate to expected3.openDate
+        )
+    }
 
     @Test
     fun `should update letter as read`() {

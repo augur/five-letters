@@ -40,12 +40,13 @@ class LetterStatDataRepository(
                 setValue(LetterStatData::unorderedSent, emptyList())
         )
         val byLogin = LetterStatData::login eq login
-        val result = collection.updateOneInTransaction(byLogin, update, true)
+        val result = collection.updateOneInTransaction(byLogin, update, false)
         LOG.info { "updated ${result.modifiedCount} Letter Stats" }
         return result.modifiedCount == 1L
     }
 
     fun addStat(login: String, sent: Day, open: Day): Boolean {
+        LOG.info { "saving letter stat for user=$login, sent=$sent, open=$open" }
         val byLogin = LetterStatData::login eq login
         val update: Bson = and(
                 push(LetterStatData::unorderedSent, sent),

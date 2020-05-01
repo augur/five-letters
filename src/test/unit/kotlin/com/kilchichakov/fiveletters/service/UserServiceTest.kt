@@ -11,6 +11,7 @@ import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.AuthDataRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository.UpdateUserDataResult
+import com.kilchichakov.fiveletters.setUpTransactionWrapperMock
 import com.mongodb.client.ClientSession
 import io.mockk.Runs
 import io.mockk.confirmVerified
@@ -71,12 +72,9 @@ internal class UserServiceTest {
         val session = mockk<ClientSession>()
         val email = "some@email"
 
+        setUpTransactionWrapperMock(transactionWrapper, session)
         val spy = spyk(service)
         every { spy.updateUserData(any(), any(), any()) } just runs
-
-        every { transactionWrapper.executeInTransaction(any()) } answers {
-            firstArg<(ClientSession)->Any>().invoke(session)
-        }
         every { passCodeService.getPassCode(any()) } returns passCode
         every { systemStateRepository.read().registrationEnabled } returns true
         every { authDataRepository.insertNewUser(capture(slot), any()) } just Runs

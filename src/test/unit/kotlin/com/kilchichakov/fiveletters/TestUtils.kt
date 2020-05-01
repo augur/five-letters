@@ -1,6 +1,12 @@
 package com.kilchichakov.fiveletters
 
+import com.kilchichakov.fiveletters.service.TransactionWrapper
+import com.mongodb.client.ClientSession
+import io.mockk.every
+import io.mockk.mockk
 import org.litote.kmongo.setTo
+import java.text.SimpleDateFormat
+import java.util.Date
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
@@ -14,4 +20,15 @@ fun Any.setPrivate(fieldName: String, value: Any) {
     val property = this::class.memberProperties.find { it.name == fieldName }!!
     property.isAccessible = true
     property.setTo(value)
+}
+
+fun setUpTransactionWrapperMock(wrapper: TransactionWrapper, session: ClientSession? = null) {
+    every { wrapper.executeInTransaction(any()) } answers {
+        firstArg<(ClientSession)->Any>().invoke(session ?: mockk())
+    }
+}
+
+fun getDateTime(s: String): Date {
+    val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    return format.parse(s)
 }

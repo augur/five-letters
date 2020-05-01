@@ -5,6 +5,7 @@ import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.util.now
+import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
 import org.bson.types.ObjectId
 import org.litote.kmongo.and
@@ -63,6 +64,12 @@ class LetterRepository(
                 .limit(limit)
         LOG.info { "found ${found.count()} letters" }
         return found.toList()
+    }
+
+    fun iterateLettersDates(login: String): FindIterable<SealedLetterEnvelop> {
+        LOG.info { "streaming letters dates, user=$login" }
+        val byLogin = Letter::login eq login
+        return collection.find(byLogin, SealedLetterEnvelop::class.java)
     }
 
     fun markLetterAsRead(login: String, id: String): Boolean {

@@ -7,6 +7,8 @@ import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.TimePeriod
 import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.repository.LetterRepository
+import com.mongodb.client.FindIterable
+import com.mongodb.client.MongoCursor
 import io.mockk.Runs
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -120,6 +122,24 @@ internal class LetterServiceTest {
         assertThat(actual).containsExactly(envelop)
         verify { letterRepository.getFutureLetters(login, any()) }
         confirmVerified(letterRepository)
+    }
+
+    @Test
+    fun `should get iterator for all letter envelops`() {
+        // Given
+        val login = "loupa"
+        val iterator = mockk<MongoCursor<SealedLetterEnvelop>>()
+        every { letterRepository.iterateLettersDates(any()).iterator() } returns iterator
+
+        // When
+        val actual = service.getLettersDatesSequence(login)
+
+        // Then
+        verify {
+            letterRepository.iterateLettersDates(login)
+        }
+        confirmVerified(letterRepository)
+        assertThat(actual.iterator()).isEqualTo(iterator)
     }
 
     @Test

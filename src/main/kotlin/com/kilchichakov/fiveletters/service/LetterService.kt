@@ -61,6 +61,11 @@ class LetterService {
         return letterRepository.getFutureLetters(login, 5000)
     }
 
+    fun getLettersDatesSequence(login: String): Sequence<SealedLetterEnvelop> {
+        LOG.info { "getting sequence of all letters for user=$login" }
+        return letterRepository.iterateLettersDates(login).iterator().asSequence()
+    }
+
     fun markLetterAsRead(login: String, letterId: String) {
         LOG.info { "marking letter $letterId of user $login as read" }
         if (!letterRepository.markLetterAsRead(login, letterId)) {

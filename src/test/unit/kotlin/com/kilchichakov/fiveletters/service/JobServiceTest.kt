@@ -13,6 +13,7 @@ import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.service.job.DailyMailingJobProcessor
 import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
+import com.kilchichakov.fiveletters.setUpTransactionWrapperMock
 import com.mongodb.client.ClientSession
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -73,9 +74,7 @@ internal class JobServiceTest {
     fun `should schedule email confirmation job`() {
         // Given
         val session = mockk<ClientSession>()
-        every { transactionWrapper.executeInTransaction(any()) } answers {
-            firstArg<(ClientSession)->Any>().invoke(session)
-        }
+        setUpTransactionWrapperMock(transactionWrapper, session)
         val date = Date.from(instant)
         val login = "loupa"
         val email = "poupa"

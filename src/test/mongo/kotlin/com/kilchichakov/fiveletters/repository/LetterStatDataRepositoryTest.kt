@@ -59,22 +59,6 @@ internal class LetterStatDataRepositoryTest : MongoTestSuite() {
     }
 
     @Test
-    fun `should fail to setData without transaction`() {
-        // Given
-        val day1 = Day(2020, 1, 1)
-        val day2 = Day(2020, 1, 2)
-        collection.insertOne(LetterStatData(null, login, emptyList(), emptyList(), listOf(day1), listOf(day2)))
-        val sentStats = listOf(april10Stat, april1Stat)
-        val openStats = listOf(may1Stat, april15Stat)
-
-        // When
-        assertThatCode {
-            val set = repository.setStatData(login, sentStats, openStats)
-        }.isInstanceOf(DatabaseException::class.java)
-
-    }
-
-    @Test
     fun `should not update anything if record not found`() {
         // Given
         val sentStats = listOf(april10Stat, april1Stat)
