@@ -90,4 +90,9 @@ class UserService : UserDetailsService {
         if (!userDataRepository.setEmailConfirmationCode(login, code, clientSession))
             throw DatabaseException("Unexpected update result during setting user $login confirmation code")
     }
+
+    fun listAllUserLogins(): List<String> {
+        LOG.info { "loading all user logins" }
+        return userDataRepository.listAllUserLogins()
+    }
 }

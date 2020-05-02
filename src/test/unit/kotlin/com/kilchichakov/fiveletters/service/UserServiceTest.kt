@@ -300,4 +300,17 @@ internal class UserServiceTest {
         // When
         assertThrows<DatabaseException> { service.setConfirmationCode(login, code, session) }
     }
+
+    @Test
+    fun `should load all user logins`() {
+        // Given
+        val users = listOf("loupa", "poupa")
+        every { userDataRepository.listAllUserLogins() } returns users
+
+        // When
+        val actual = service.listAllUserLogins()
+
+        // Then
+        assertThat(actual).isEqualTo(users)
+    }
 }

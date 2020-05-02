@@ -14,6 +14,7 @@ import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.JobService
 import com.kilchichakov.fiveletters.service.LetterService
+import com.kilchichakov.fiveletters.service.LetterStatDataService
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
 import com.kilchichakov.fiveletters.service.TransactionWrapper
@@ -36,6 +37,8 @@ import java.util.Date
 @Secured("ROLE_ADMIN")
 class AdminController {
 
+    private val ALL_USERS = "@all"
+
     @Autowired
     lateinit var systemService: SystemService
 
@@ -47,6 +50,9 @@ class AdminController {
 
     @Autowired
     lateinit var inputValidationService: InputValidationService
+
+    @Autowired
+    lateinit var letterStatService: LetterStatDataService
 
     @PostMapping("/registration")
     @Logged
@@ -72,6 +78,20 @@ class AdminController {
         inputValidationService.validate(request)
         LOG.info { "asked to change password for user ${request.login}" }
         userService.changeUserPassword(request.login, request.password)
+    }
+
+    @GetMapping("/users/letters/recalculate-stats")
+    @Logged
+    fun recalculateStats(@RequestParam user: String) {
+        ControllerUtils.getLogin()
+        LOG.info { "asked to recalculate letter stats for $user" }
+        if (user == ALL_USERS) {
+            userService.listAllUserLogins().forEach {
+                letterStatService.recalculateStatData(it)
+            }
+        } else {
+            letterStatService.recalculateStatData(user)
+        }
     }
 
     @Autowired

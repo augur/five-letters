@@ -3,6 +3,7 @@ package com.kilchichakov.fiveletters.controller
 import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
+import com.kilchichakov.fiveletters.service.LetterStatDataService
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
 import com.kilchichakov.fiveletters.service.UserService
@@ -28,6 +29,9 @@ class AdminControllerTest : ControllerTestSuite() {
 
     @RelaxedMockK
     lateinit var userService: UserService
+
+    @RelaxedMockK
+    lateinit var letterStatService: LetterStatDataService
 
     @InjectMockKs
     lateinit var controller: AdminController
@@ -80,5 +84,38 @@ class AdminControllerTest : ControllerTestSuite() {
             userService.changeUserPassword(login, pwd)
         }
         confirmVerified(inputValidationService, userService)
+    }
+
+    @Test
+    fun `should recalculate letter stat data for given user`() {
+        // Given
+        val login = "loupa"
+
+        // When
+        controller.recalculateStats(login)
+
+        // Then
+        verify {
+            letterStatService.recalculateStatData(login)
+        }
+        confirmVerified(letterStatService)
+    }
+
+    @Test
+    fun `should recalculate letter stat data for all users`() {
+        // Given
+        val users = listOf("loupa", "poupa")
+        every { userService.listAllUserLogins() } returns users
+
+        // When
+        controller.recalculateStats("@all")
+
+        // Then
+        verify {
+            userService.listAllUserLogins()
+            letterStatService.recalculateStatData("loupa")
+            letterStatService.recalculateStatData("poupa")
+        }
+        confirmVerified(userService, letterStatService)
     }
 }

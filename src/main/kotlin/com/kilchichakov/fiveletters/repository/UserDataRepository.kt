@@ -1,6 +1,7 @@
 package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.controller.logResult
 import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.model.UserData
 import com.mongodb.client.ClientSession
@@ -64,4 +65,13 @@ class UserDataRepository(
         LOG.info { "updated ${result.modifiedCount} users" }
         return result.modifiedCount == 1L
     }
+
+    fun listAllUserLogins(): List<String> {
+        LOG.info { "loading all users logins" }
+        return collection.find(Login::class.java)
+                .map { it.login }.toList()
+                .logResult()
+    }
+
+    internal data class Login(val login: String)
 }

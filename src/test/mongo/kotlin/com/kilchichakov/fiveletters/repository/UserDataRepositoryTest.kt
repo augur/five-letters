@@ -136,4 +136,19 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         assertThat(updated).isEqualToIgnoringGivenFields(userData1, "emailConfirmed", "emailConfirmationCode")
         assertThat(untouched).isEqualTo(userData2)
     }
+
+    @Test
+    fun `should get all user logins`() {
+        // Given
+        val userData1 = UserData(null, "loupa", "sdfdss", "email", false, null)
+        val userData2 = UserData(null, "poupa", "sdfs", "email", false, "other")
+        collection.save(userData1)
+        collection.save(userData2)
+
+        // When
+        val actual = repository.listAllUserLogins()
+
+        // Then
+        assertThat(actual).containsExactlyInAnyOrder("loupa", "poupa")
+    }
 }
