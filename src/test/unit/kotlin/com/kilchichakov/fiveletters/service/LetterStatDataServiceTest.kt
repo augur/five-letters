@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.getDateTime
 import com.kilchichakov.fiveletters.model.Day
+import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.LetterStat
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.repository.LetterStatDataRepository
@@ -12,6 +13,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
@@ -67,5 +69,28 @@ internal class LetterStatDataServiceTest {
         confirmVerified(letterService, letterStatDataRepository)
         assertThat(sentSlot.captured).containsExactlyInAnyOrder(*expectedSent)
         assertThat(openSlot.captured).containsExactlyInAnyOrder(*expectedOpen)
+    }
+
+    @Test
+    fun `should add letter stats`() {
+        // Given
+        val sent = getDateTime("2017-02-16T23:00:00.000+00:00")
+        val open = getDateTime("2018-12-03T01:00:00.000+00:00")
+        val letter = mockk<Letter> {
+            every { login } returns LOGIN
+            every { sendDate } returns sent
+            every { openDate } returns open
+        }
+        val expectedSent = Day(2017, 2, 16)
+        val expectedOpen = Day(2018, 12, 3)
+
+        // When
+        service.addLetterStats(letter)
+
+        // Then
+        verify {
+            letterStatDataRepository.addStat(LOGIN, expectedSent, expectedOpen)
+        }
+        confirmVerified(letterStatDataRepository)
     }
 }

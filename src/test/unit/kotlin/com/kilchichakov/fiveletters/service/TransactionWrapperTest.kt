@@ -84,6 +84,7 @@ internal class TransactionWrapperTest {
         lateinit var collection: MongoCollection<Int>
         lateinit var filter: Bson
         lateinit var update: Bson
+        var document: Int = 42
 
         @BeforeEach
         fun setUp() {
@@ -104,6 +105,11 @@ internal class TransactionWrapperTest {
                         { mandatory -> collection.findOneInTransaction(filter, mandatory) },
                         { collection.findOne(session, filter) },
                         { collection.findOne(filter) }
+                ),
+                Args(
+                        { mandatory -> collection.insertOneInTransaction(document, mandatory) },
+                        { collection.insertOne(session, document) },
+                        { collection.insertOne(document) }
                 )
         )
 

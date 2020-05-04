@@ -7,6 +7,7 @@ import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.TimePeriod
 import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.repository.LetterRepository
+import com.kilchichakov.fiveletters.setUpTransactionWrapperMock
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCursor
 import io.mockk.Runs
@@ -46,6 +47,12 @@ internal class LetterServiceTest {
     @RelaxedMockK
     lateinit var timePeriodService: TimePeriodService
 
+    @RelaxedMockK
+    lateinit var transactionWrapper: TransactionWrapper
+
+    @RelaxedMockK
+    lateinit var letterStatDataService: LetterStatDataService
+
     @InjectMockKs
     lateinit var service: LetterService
 
@@ -59,6 +66,7 @@ internal class LetterServiceTest {
         val offset = -26
         val date = Date()
         val slot = slot<Letter>()
+        setUpTransactionWrapperMock(transactionWrapper)
 
         val spy = spyk(service, recordPrivateCalls = true)
         every { timePeriodService.getTimePeriod(any()) } returns period
@@ -73,8 +81,9 @@ internal class LetterServiceTest {
         assertThat(slot.captured.login).isEqualTo(login)
         verify {
             timePeriodService.getTimePeriod(periodName)
+            letterStatDataService.addLetterStats(slot.captured)
         }
-        confirmVerified(timePeriodService)
+        confirmVerified(timePeriodService, letterStatDataService)
     }
 
     @Test

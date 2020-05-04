@@ -53,3 +53,13 @@ fun <T>MongoCollection<T>.findOneInTransaction(filter: Bson, mandatory: Boolean)
         this.findOne(session, filter)
     }
 }
+
+fun <T>MongoCollection<T>.insertOneInTransaction(document: T, mandatory: Boolean) {
+    val session = threadLocalSession.get()
+    return if (session == null) {
+        if (mandatory) throw DatabaseException("Attempted to run insertOne document=$document, w/o transaction")
+        this.insertOne(document)
+    } else {
+        this.insertOne(session, document)
+    }
+}

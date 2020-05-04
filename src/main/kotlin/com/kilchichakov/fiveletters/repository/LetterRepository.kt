@@ -4,6 +4,7 @@ import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
+import com.kilchichakov.fiveletters.service.insertOneInTransaction
 import com.kilchichakov.fiveletters.util.now
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
@@ -30,7 +31,7 @@ class LetterRepository(
 
     fun saveNewLetter(letter: Letter) {
         LOG.info { "inserting new letter $letter" }
-        collection.insertOne(letter)
+        collection.insertOneInTransaction(letter, false)
         LOG.info { "inserted" }
     }
 

@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.model.Day
+import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.LetterStat
 import com.kilchichakov.fiveletters.repository.LetterStatDataRepository
 import org.springframework.stereotype.Service
@@ -32,6 +33,12 @@ class LetterStatDataService(
 
         repository.setStatData(login, sentStats, openStats)
         LOG.info { "recalculation done"}
+    }
+
+    fun addLetterStats(letter: Letter) {
+        LOG.info { "adding stats of letter=$letter" }
+        repository.addStat(letter.login, letter.sendDate.toDay(), letter.openDate.toDay())
+        LOG.info { "added" }
     }
 
     private fun Date.toDay(zone: ZoneId = ZoneId.of("UTC")): Day {

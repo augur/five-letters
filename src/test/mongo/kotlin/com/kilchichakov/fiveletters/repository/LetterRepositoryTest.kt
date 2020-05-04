@@ -1,6 +1,7 @@
 package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.MongoTestSuite
+import com.kilchichakov.fiveletters.getDateTime
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.mongodb.client.MongoCollection
@@ -249,9 +250,4 @@ internal class LetterRepositoryTest : MongoTestSuite() {
             val action: () -> ACTUAL,
             val assert: (ACTUAL) -> Unit
     )
-
-    private fun getDateTime(s: String): Date {
-        val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-        return format.parse(s)
-    }
 }

@@ -23,13 +23,22 @@ class LetterService {
     @Autowired
     lateinit var timePeriodService: TimePeriodService
 
+    @Autowired
+    lateinit var letterStatDataService: LetterStatDataService
+
+    @Autowired
+    lateinit var transactionWrapper: TransactionWrapper
+
     fun sendLetter(login: String, message: String, periodName: String, timezoneOffset: Int) {
         val period = timePeriodService.getTimePeriod(periodName)
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         val letter = Letter(null, login, message, false, Calendar.getInstance().time,
                 calcOpenDate(period, timezoneOffset, calendar))
         LOG.info { "sending letter $letter" }
-        letterRepository.saveNewLetter(letter)
+        transactionWrapper.executeInTransaction {
+            letterRepository.saveNewLetter(letter)
+            letterStatDataService.addLetterStats(letter)
+        }
         LOG.info { "sent" }
     }
 
