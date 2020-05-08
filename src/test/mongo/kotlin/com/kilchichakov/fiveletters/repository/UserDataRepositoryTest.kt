@@ -46,13 +46,14 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         val login = "someLogin"
         val nick = "nick"
         val email = "nick@com"
-        val userData = UserData(null, login, nick, email, true)
+        val userData = UserData(null, login, nick, email, true, timeZone = "UTC")
         collection.save(userData)
         val newEmail = "poupa"
         val newNickname = "loupa"
+        val timezone = "Singapore"
 
         // When
-        val done = repository.updateUserData(login, newEmail, newNickname)
+        val done = repository.updateUserData(login, newEmail, newNickname, timezone)
         val actual = repository.loadUserData(login) ?: throw Exception()
 
         assertThat(done.success).isTrue()
@@ -60,6 +61,7 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         assertThat(actual.email).isEqualTo(newEmail)
         assertThat(actual.nickname).isEqualTo(newNickname)
         assertThat(actual.emailConfirmed).isFalse()
+        assertThat(actual.timeZone).isEqualTo(timezone)
     }
 
     @Test
@@ -68,18 +70,20 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         val login = "someLogin"
         val nick = "nick"
         val email = "nick@com"
-        val userData = UserData(null, login, nick, email, true)
+        val userData = UserData(null, login, nick, email, true, timeZone = "GMT")
         collection.save(userData)
         val newNickname = "loupa"
+        val timezone = "Singapore"
 
         // When
-        val done = repository.updateUserData(login, email, newNickname)
+        val done = repository.updateUserData(login, email, newNickname, timezone)
         val actual = repository.loadUserData(login) ?: throw Exception()
 
         assertThat(done.success).isTrue()
         assertThat(done.emailChanged).isFalse()
         assertThat(actual.nickname).isEqualTo(newNickname)
         assertThat(actual.emailConfirmed).isTrue()
+        assertThat(actual.timeZone).isEqualTo(timezone)
     }
 
     @Test
@@ -90,7 +94,7 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         val newNickname = "loupa"
 
         // Then
-        assertThrows<DatabaseException> { repository.updateUserData(login, email, newNickname) }
+        assertThrows<DatabaseException> { repository.updateUserData(login, email, newNickname, "UTC") }
     }
 
     @Test

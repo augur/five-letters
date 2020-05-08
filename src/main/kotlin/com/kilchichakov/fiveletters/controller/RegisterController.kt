@@ -29,7 +29,8 @@ class RegisterController {
         return processAndRespondCode(false) {
             inputValidationService.validate(request)
             LOG.info { "asked to register, ${request.copy(password = "********")}" }
-            userService.registerNewUser(request.login, request.password, request.acceptLicense, request.passCode, request.email)
+            userService.registerNewUser(request.login, request.password, request.acceptLicense, request.passCode,
+                    request.email, request.timeZone)
         }.logResult()
     }
 }

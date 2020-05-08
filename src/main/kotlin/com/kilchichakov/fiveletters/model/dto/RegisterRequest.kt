@@ -5,9 +5,10 @@ data class RegisterRequest(
         val password: String,
         val acceptLicense: Boolean,
         val passCode: String?,
-        val email: String
+        val email: String,
+        val timeZone: String
 ) {
     override fun toString(): String {
-        return "RegisterRequest(login='$login', password=********, acceptLicense=$acceptLicense, passCode=$passCode, email=$email)"
+        return "RegisterRequest(login='$login', password=********, acceptLicense=$acceptLicense, passCode=$passCode, email=$email, timezone=$timeZone)"
     }
 }

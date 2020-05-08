@@ -71,17 +71,18 @@ internal class UserServiceTest {
         val passCode = mockk<OneTimePassCode>()
         val session = mockk<ClientSession>()
         val email = "some@email"
+        val timezone = "Singapore"
 
         setUpTransactionWrapperMock(transactionWrapper, session)
         val spy = spyk(service)
-        every { spy.updateUserData(any(), any(), any()) } just runs
+        every { spy.updateUserData(any(), any(), any(), any()) } just runs
         every { passCodeService.getPassCode(any()) } returns passCode
         every { systemStateRepository.read().registrationEnabled } returns true
         every { authDataRepository.insertNewUser(capture(slot), any()) } just Runs
         every { passwordEncoder.encode(any()) } returns encoded
 
         // When
-        spy.registerNewUser(login, password, true, code, email)
+        spy.registerNewUser(login, password, true, code, email, timezone)
 
         // Then
         assertThat(slot.captured._id).isNull()
@@ -93,7 +94,7 @@ internal class UserServiceTest {
             passwordEncoder.encode(password)
             passCodeService.usePassCode(passCode, login, session)
             authDataRepository.insertNewUser(slot.captured, session)
-            spy.updateUserData(login, email, "")
+            spy.updateUserData(login, email, "", timezone)
         }
         confirmVerified(systemStateRepository, passwordEncoder, authDataRepository, passCodeService)
     }
@@ -102,7 +103,7 @@ internal class UserServiceTest {
     fun `should fail to register if licence is not accepted`() {
         // When
         assertThrows<TermsOfUseException> {
-            service.registerNewUser("lg", "pw", false, "pscd", "some-email")
+            service.registerNewUser("lg", "pw", false, "pscd", "some-email", "Hmm")
         }
     }
 
@@ -110,7 +111,7 @@ internal class UserServiceTest {
     fun `should fail to register if registration is disabled`() {
         every { systemStateRepository.read().registrationEnabled } returns false
         assertThrows<SystemStateException> {
-            service.registerNewUser("lg", "pw", true, "pscd", "some-email")
+            service.registerNewUser("lg", "pw", true, "pscd", "some-email", "Orly")
         }
     }
 
@@ -230,14 +231,15 @@ internal class UserServiceTest {
         val login = "loupa"
         val nick = "poupa"
         val email = "loupa@poupa"
-        every { userDataRepository.updateUserData(any(), any(), any()) } returns UpdateUserDataResult(true, true)
+        val timezone = "Singapore"
+        every { userDataRepository.updateUserData(any(), any(), any(), any()) } returns UpdateUserDataResult(true, true)
 
         // When
-        service.updateUserData(login, email, nick)
+        service.updateUserData(login, email, nick, timezone)
 
         // Then
         verify {
-            userDataRepository.updateUserData(login, email, nick)
+            userDataRepository.updateUserData(login, email, nick, timezone)
             jobService.scheduleEmailConfirmation(login)
         }
         confirmVerified(userDataRepository, jobService)
@@ -249,14 +251,15 @@ internal class UserServiceTest {
         val login = "loupa"
         val nick = "poupa"
         val email = "loupa@poupa"
-        every { userDataRepository.updateUserData(any(), any(), any()) } returns UpdateUserDataResult(true, false)
+        val timezone = "Singapore"
+        every { userDataRepository.updateUserData(any(), any(), any(), any()) } returns UpdateUserDataResult(true, false)
 
         // When
-        service.updateUserData(login, email, nick)
+        service.updateUserData(login, email, nick, timezone)
 
         // Then
         verify {
-            userDataRepository.updateUserData(login, email, nick)
+            userDataRepository.updateUserData(login, email, nick, timezone)
         }
         confirmVerified(userDataRepository, jobService)
     }
@@ -267,10 +270,11 @@ internal class UserServiceTest {
         val login = "loupa"
         val nick = "poupa"
         val email = "loupa@poupa"
+        val timezone = "Singapore"
         //every { userDataRepository.updateUserData(any(), any(), any()) } returns false
 
         // When
-        assertThrows<DatabaseException> { service.updateUserData(login, email, nick) }
+        assertThrows<DatabaseException> { service.updateUserData(login, email, nick, timezone) }
     }
 
     @Test

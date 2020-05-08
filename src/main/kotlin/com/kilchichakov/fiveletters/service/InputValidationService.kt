@@ -9,9 +9,12 @@ import com.kilchichakov.fiveletters.model.dto.RegisterRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import org.springframework.stereotype.Service
+import java.util.TimeZone
 
 @Service
 class InputValidationService {
+
+    private val availableZones = TimeZone.getAvailableIDs().toSet()
 
     fun validate(input: Any) {
         when(input) {
@@ -53,6 +56,7 @@ class InputValidationService {
             checkPassword(registerRequest.password)
             checkPassCode(registerRequest.passCode)
             checkEmail(registerRequest.email)
+            checkTimeZone(registerRequest.timeZone)
         }
     }
 
@@ -68,6 +72,7 @@ class InputValidationService {
         validation(updateProfileRequest) {
             checkEmail(updateProfileRequest.email)
             checkNickname(updateProfileRequest.nickname)
+            checkTimeZone(updateProfileRequest.timeZone)
         }
     }
 
@@ -127,6 +132,10 @@ class InputValidationService {
         if (email.isEmpty()) errors.add(ValidationError("email", "is empty"))
         if (!email.matches(Regex(EMAIL_REGEX))) errors.add(ValidationError("email", "has invalid format"))
         if (email.length > 100) errors.add(ValidationError("email", "is too long"))
+    }
+
+    private fun ValidationResult.checkTimeZone(timeZone: String) {
+        if (!availableZones.contains(timeZone)) errors.add(ValidationError("timeZone", "not recognized"))
     }
 
     private fun ValidationResult.checkNickname(nickname: String) {

@@ -28,7 +28,7 @@ class UserDataRepository(
 
     data class UpdateUserDataResult(val success: Boolean, val emailChanged: Boolean)
 
-    fun updateUserData(login: String, email: String, nickname: String): UpdateUserDataResult {
+    fun updateUserData(login: String, email: String, nickname: String, timeZone: String): UpdateUserDataResult {
         LOG.info { "updating userData of $login - $email, $nickname" }
         val existingData =  loadUserData(login) ?: throw DatabaseException("UserData of $login not found")
         val byLogin = UserData::login eq login
@@ -39,7 +39,7 @@ class UserDataRepository(
             emailChanged = true
             update = and(update, setValue(UserData::emailConfirmed, false))
         }
-        update = and(update, setValue(UserData::nickname, nickname))
+        update = and(update, setValue(UserData::nickname, nickname), setValue(UserData::timeZone, timeZone))
         val result = collection.updateOne(byLogin, update)
         LOG.info { "updated ${result.modifiedCount} users" }
         return UpdateUserDataResult(result.modifiedCount == 1L, emailChanged)

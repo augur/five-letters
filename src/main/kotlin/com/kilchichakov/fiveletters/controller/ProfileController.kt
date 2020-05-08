@@ -32,7 +32,8 @@ class ProfileController {
         val login = getLogin()!!
         LOG.info { "asked whoami" }
         val userData = userService.loadUserData(login)
-        return WhoAmIResponse(userData.nickname.orEmpty(), userData.email.orEmpty(), userData.emailConfirmed)
+        return WhoAmIResponse(userData.nickname.orEmpty(), userData.email.orEmpty(), userData.emailConfirmed,
+                userData.timeZone)
                 .logResult()
     }
 
@@ -42,7 +43,7 @@ class ProfileController {
         return processAndRespondCode {
             inputValidationService.validate(request)
             LOG.info { "asked to update userData - $request" }
-            userService.updateUserData(it!!, request.email, request.nickname)
+            userService.updateUserData(it!!, request.email, request.nickname, request.timeZone)
         }.logResult()
     }
 }

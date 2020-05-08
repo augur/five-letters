@@ -43,7 +43,8 @@ class UserService : UserDetailsService {
     @Autowired
     private lateinit var jobService: JobService
 
-    fun registerNewUser(login: String, password: String, licenceAccepted: Boolean, code: String?, email: String) {
+    fun registerNewUser(login: String, password: String, licenceAccepted: Boolean, code: String?,
+                        email: String, timeZone: String) {
         LOG.info { "registering new user $login" }
         if (!licenceAccepted) throw TermsOfUseException("Licence was not accepted")
         if (!systemStateRepository.read().registrationEnabled) throw SystemStateException("Registration is disabled")
@@ -57,7 +58,7 @@ class UserService : UserDetailsService {
             LOG.info { "consumed" }
             authDataRepository.insertNewUser(userData, it)
         }
-        updateUserData(login, email, "")
+        updateUserData(login, email, "", timeZone)
     }
 
     override fun loadUserByUsername(login: String): UserDetails {
@@ -78,9 +79,9 @@ class UserService : UserDetailsService {
         return userDataRepository.loadUserData(login) ?: throw DataException("not found UserData of $login")
     }
 
-    fun updateUserData(login: String, email: String, nickname: String) {
+    fun updateUserData(login: String, email: String, nickname: String, timeZone: String) {
         LOG.info { "updating userData of $login - $email, $nickname" }
-        val updateResult = userDataRepository.updateUserData(login, email, nickname)
+        val updateResult = userDataRepository.updateUserData(login, email, nickname, timeZone)
         if (!updateResult.success) throw DatabaseException("Unexpected update result during changing user $login userData")
         if (updateResult.emailChanged) jobService.scheduleEmailConfirmation(login)
     }

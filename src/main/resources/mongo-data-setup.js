@@ -112,3 +112,12 @@ db.job.save(
     }
 )
 
+// === 20.5.1 ===
+
+db.userData.update(
+  {},
+  { $set: {"timeZone": "Europe/Moscow"} },
+  false,
+  true
+)
+

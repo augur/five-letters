@@ -8,4 +8,5 @@ data class UserData(
         val nickname: String?,
         val email: String?,
         val emailConfirmed: Boolean = false,
-        val emailConfirmationCode: String? = null)
+        val emailConfirmationCode: String? = null,
+        val timeZone: String = "UTC")

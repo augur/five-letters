@@ -85,13 +85,15 @@ internal class InputValidationServiceTest {
         val passCode = "xxx-yyy-zzz"
         val email = "email"
         val spy = spyk(service, recordPrivateCalls = true)
+        val timezone = "Singapore"
         every { spy["checkLogin"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkPassword"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkPassCode"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkEmail"](any<ValidationResult>(), any<String>()) } returns 0
+        every { spy["checkTimeZone"](any<ValidationResult>(), any<String>()) } returns 0
 
         // When
-        spy.validate(RegisterRequest(login, pwd, false, passCode, email))
+        spy.validate(RegisterRequest(login, pwd, false, passCode, email, timezone))
 
         // Then
         verify {
@@ -99,6 +101,7 @@ internal class InputValidationServiceTest {
             spy["checkPassword"](any<ValidationResult>(), pwd)
             spy["checkPassCode"](any<ValidationResult>(), passCode)
             spy["checkEmail"](any<ValidationResult>(), email)
+            spy["checkTimeZone"](any<ValidationResult>(), timezone)
         }
     }
 
@@ -126,16 +129,21 @@ internal class InputValidationServiceTest {
         // Given
         val email = "email"
         val nickname = "nickname"
+        val timezone = "Singapore"
         val spy = spyk(service, recordPrivateCalls = true)
         every { spy["checkEmail"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkNickname"](any<ValidationResult>(), any<String>()) } returns 0
+        every { spy["checkTimeZone"](any<ValidationResult>(), any<String>()) } returns 0
 
         // When
-        spy.validate(UpdateProfileRequest(email, nickname))
+        spy.validate(UpdateProfileRequest(email, nickname, timezone))
 
         // Then
-        verify { spy["checkEmail"](any<ValidationResult>(), email) }
-        verify { spy["checkNickname"](any<ValidationResult>(), nickname) }
+        verify {
+            spy["checkEmail"](any<ValidationResult>(), email)
+            spy["checkNickname"](any<ValidationResult>(), nickname)
+            spy["checkTimeZone"](any<ValidationResult>(), timezone)
+        }
     }
 
 
@@ -312,6 +320,24 @@ internal class InputValidationServiceTest {
         testCases.forEach {
             val vResult = ValidationResult(ArrayList())
             service.invokePrivate("checkEmail", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
+    fun `should check timeZone`() {
+        // Given
+        val testCases = listOf(
+                StringCase("Singapore", true),
+                StringCase("US/Michigan", true),
+                StringCase("Indian/Christmas", true),
+                StringCase("Stygian", false)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkTimeZone", vResult, it.value)
             assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
         }
     }

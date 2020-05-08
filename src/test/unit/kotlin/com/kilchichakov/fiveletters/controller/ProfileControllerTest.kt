@@ -32,7 +32,8 @@ internal class ProfileControllerTest : ControllerTestSuite() {
         // Given
         val nick = "loupa"
         val email = "loupa@poupa"
-        val userData = UserData(null, LOGIN, nick, email, true)
+        val timezone = "Singapore"
+        val userData = UserData(null, LOGIN, nick, email, true, timeZone = timezone)
         every { userService.loadUserData(any()) } returns userData
 
         // When
@@ -42,6 +43,7 @@ internal class ProfileControllerTest : ControllerTestSuite() {
         actual.nickname toBeEqual nick
         actual.email toBeEqual email
         actual.emailConfirmed toBe true
+        actual.timeZone toBeEqual timezone
         verify {
             userService.loadUserData(LOGIN)
         }
@@ -53,9 +55,11 @@ internal class ProfileControllerTest : ControllerTestSuite() {
         // Given
         val nick = "poupa"
         val email = "loupa@poupa"
+        val timezone = "Singapore"
         val request = mockk<UpdateProfileRequest>()
         every { request.nickname } returns nick
         every { request.email } returns email
+        every { request.timeZone } returns timezone
 
         // When
         val actual = controller.updateProfile(request)
@@ -64,7 +68,7 @@ internal class ProfileControllerTest : ControllerTestSuite() {
         actual.code toBe ErrorCode.NO_ERROR.numeric
         verify {
             inputValidationService.validate(request)
-            userService.updateUserData(LOGIN, email, nick)
+            userService.updateUserData(LOGIN, email, nick, timezone)
         }
         confirmVerified(inputValidationService, userService)
     }
