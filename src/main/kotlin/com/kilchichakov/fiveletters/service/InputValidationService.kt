@@ -32,7 +32,6 @@ class InputValidationService {
         validation(letterRequest) {
             checkMessage(letterRequest.message)
             checkPeriod(letterRequest.period)
-            checkTimezoneOffset(letterRequest.timezoneOffset)
         }
     }
 
@@ -108,10 +107,6 @@ class InputValidationService {
     private fun ValidationResult.checkPeriod(period: String) {
         if (period.isEmpty()) errors.add(ValidationError("period", "is empty"))
         if (period.length > 20) errors.add(ValidationError("period", "is too long"))
-    }
-
-    private fun ValidationResult.checkTimezoneOffset(offset: Int) {
-        if (offset < -840 || offset > 720) errors.add(ValidationError("timezoneOffset", "is out of bounds"))
     }
 
     private fun ValidationResult.checkPageNumber(pageNumber: Int) {

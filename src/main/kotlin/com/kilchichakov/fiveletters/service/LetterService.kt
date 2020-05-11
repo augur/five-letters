@@ -27,13 +27,17 @@ class LetterService {
     lateinit var letterStatDataService: LetterStatDataService
 
     @Autowired
+    lateinit var userService: UserService
+
+    @Autowired
     lateinit var transactionWrapper: TransactionWrapper
 
-    fun sendLetter(login: String, message: String, periodName: String, timezoneOffset: Int) {
+    fun sendLetter(login: String, message: String, periodName: String) {
+        val timezone = userService.loadUserData(login).timeZone
         val period = timePeriodService.getTimePeriod(periodName)
-        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone(timezone))
         val letter = Letter(null, login, message, false, Calendar.getInstance().time,
-                calcOpenDate(period, timezoneOffset, calendar))
+                calcOpenDate(period, calendar))
         LOG.info { "sending letter $letter" }
         transactionWrapper.executeInTransaction {
             letterRepository.saveNewLetter(letter)
@@ -89,7 +93,7 @@ class LetterService {
         }
     }
 
-    internal fun calcOpenDate(period: TimePeriod, timezoneOffset: Int, calendar: Calendar): Date {
+    internal fun calcOpenDate(period: TimePeriod, calendar: Calendar): Date {
         //calendar.time = SimpleDateFormat("YYYY-MM-dd").parse("2018-12-31")
         with(period) {
             calendar.add(Calendar.DAY_OF_YEAR, days)
@@ -102,8 +106,6 @@ class LetterService {
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)
         calendar.set(Calendar.MILLISECOND, 0)
-        //Applying offset
-        calendar.add(Calendar.MINUTE, timezoneOffset)
         return calendar.time
     }
 }

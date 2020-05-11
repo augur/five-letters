@@ -44,8 +44,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         // Given
         val message = "some letter"
         val period = "THREE_MONTHS"
-        val offset = 25
-        val request = SendLetterRequest(message, period, offset)
+        val request = SendLetterRequest(message, period)
 
         // When
         val actual = controller.send(request)
@@ -55,7 +54,7 @@ internal class LetterControllerTest : ControllerTestSuite() {
         verify {
             ControllerUtils.getLogin()
             inputValidationService.validate(request)
-            letterService.sendLetter(LOGIN, message, period, offset)
+            letterService.sendLetter(LOGIN, message, period)
         }
         confirmVerified(inputValidationService, letterService)
     }

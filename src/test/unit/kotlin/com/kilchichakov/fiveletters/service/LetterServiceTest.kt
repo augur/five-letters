@@ -53,6 +53,9 @@ internal class LetterServiceTest {
     @RelaxedMockK
     lateinit var letterStatDataService: LetterStatDataService
 
+    @RelaxedMockK
+    lateinit var userService: UserService
+
     @InjectMockKs
     lateinit var service: LetterService
 
@@ -63,23 +66,27 @@ internal class LetterServiceTest {
         val message = "messag"
         val period = TimePeriod("THREE_MONTHS", 0, 0, 3, 0, true)
         val periodName = "THREE_MONTHS"
-        val offset = -26
+        val timezone = "Singapore"
         val date = Date()
         val slot = slot<Letter>()
+        every { userService.loadUserData(any()).timeZone } returns timezone
         setUpTransactionWrapperMock(transactionWrapper)
 
         val spy = spyk(service, recordPrivateCalls = true)
         every { timePeriodService.getTimePeriod(any()) } returns period
-        every { spy["calcOpenDate"](any<TimePeriod>(), any<Int>(), any<Calendar>()) } returns date
+        every { spy["calcOpenDate"](any<TimePeriod>(), any<Calendar>()) } returns date
         every { letterRepository.saveNewLetter(capture(slot)) } just Runs
 
         // When
-        spy.sendLetter(login, message, periodName, offset)
+        spy.sendLetter(login, message, periodName)
 
         // Then
         assertThat(slot.captured._id).isNull()
         assertThat(slot.captured.login).isEqualTo(login)
+        assertThat(slot.captured.message).isEqualTo(message)
+        assertThat(slot.captured.read).isFalse()
         verify {
+            userService.loadUserData(login)
             timePeriodService.getTimePeriod(periodName)
             letterStatDataService.addLetterStats(slot.captured)
         }
@@ -221,18 +228,18 @@ internal class LetterServiceTest {
         val year3Period = TimePeriod("THREE_YEARS", 0, 0, 0, 3, true)
 
         val cases = listOf(
-                CalcDateCase(weekPeriod, -180, Date.from(Instant.ofEpochMilli(1569013200000))),
-                CalcDateCase(monthPeriod, -180, Date.from(Instant.ofEpochMilli(1571000400000))),
-                CalcDateCase(month3Period, -180, Date.from(Instant.ofEpochMilli(1576270800000))),
-                CalcDateCase(yearPeriod, -180, Date.from(Instant.ofEpochMilli(1600030800000))),
-                CalcDateCase(year3Period, -180, Date.from(Instant.ofEpochMilli(1663102800000)))
+                CalcDateCase(weekPeriod, "Europe/Moscow", Date.from(Instant.ofEpochMilli(1569013200000))),
+                CalcDateCase(monthPeriod, "Europe/Moscow", Date.from(Instant.ofEpochMilli(1571000400000))),
+                CalcDateCase(month3Period, "Europe/Moscow", Date.from(Instant.ofEpochMilli(1576270800000))),
+                CalcDateCase(yearPeriod, "Europe/Moscow", Date.from(Instant.ofEpochMilli(1600030800000))),
+                CalcDateCase(year3Period, "Europe/Moscow", Date.from(Instant.ofEpochMilli(1663102800000)))
         )
 
         // When
         cases.forEach { case ->
-            val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            val calendar = Calendar.getInstance(TimeZone.getTimeZone(case.timezone))
             calendar.time = Date.from(instant)
-            val actual = service.calcOpenDate(case.period, case.offset, calendar)
+            val actual = service.calcOpenDate(case.period, calendar)
             assertThat(actual).isEqualTo(case.expected)
         }
     }
@@ -263,7 +270,7 @@ internal class LetterServiceTest {
 
     data class CalcDateCase(
             val period: TimePeriod,
-            val offset: Int,
+            val timezone: String,
             val expected: Date
     )
 }

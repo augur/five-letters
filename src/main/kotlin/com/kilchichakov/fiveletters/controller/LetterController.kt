@@ -41,7 +41,7 @@ class LetterController {
         return processAndRespondCode { login ->
             inputValidationService.validate(request)
             LOG.info { "asked to send new letter: $request" }
-            letterService.sendLetter(login!!, request.message, request.period, request.timezoneOffset)
+            letterService.sendLetter(login!!, request.message, request.period)
         }.logResult()
     }
 

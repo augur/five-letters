@@ -28,19 +28,16 @@ internal class InputValidationServiceTest {
         // Given
         val message = "some message!!3"
         val period = "DAY"
-        val offset = -180
         val spy = spyk(service, recordPrivateCalls = true)
         every { spy["checkMessage"](any<ValidationResult>(), any<String>()) } returns 0
         every { spy["checkPeriod"](any<ValidationResult>(), any<String>()) } returns 0
-        every { spy["checkTimezoneOffset"](any<ValidationResult>(), any<Int>()) } returns 0
 
         // When
-        spy.validate(SendLetterRequest(message, period, offset))
+        spy.validate(SendLetterRequest(message, period))
 
         // Then
         verify { spy["checkMessage"](any<ValidationResult>(), message) }
         verify { spy["checkPeriod"](any<ValidationResult>(), period) }
-        verify { spy["checkTimezoneOffset"](any<ValidationResult>(), offset) }
     }
 
     @Test
@@ -229,23 +226,6 @@ internal class InputValidationServiceTest {
         testCases.forEach {
             val vResult = ValidationResult(ArrayList())
             service.invokePrivate("checkPeriod", vResult, it.value)
-            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
-        }
-    }
-
-    @Test
-    fun `should check time-zone offset`() {
-        // Given
-        val testCases = listOf(
-                IntCase(0,true),
-                IntCase(1000, false),
-                IntCase(-1000, false)
-        )
-
-        // Then
-        testCases.forEach {
-            val vResult = ValidationResult(ArrayList())
-            service.invokePrivate("checkTimezoneOffset", vResult, it.value)
             assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
         }
     }
