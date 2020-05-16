@@ -88,7 +88,7 @@ internal class LetterServiceTest {
         verify {
             userService.loadUserData(login)
             timePeriodService.getTimePeriod(periodName)
-            letterStatDataService.addLetterStats(slot.captured)
+            letterStatDataService.addLetterStats(slot.captured, timezone)
         }
         confirmVerified(timePeriodService, letterStatDataService)
     }

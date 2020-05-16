@@ -41,7 +41,7 @@ class LetterService {
         LOG.info { "sending letter $letter" }
         transactionWrapper.executeInTransaction {
             letterRepository.saveNewLetter(letter)
-            letterStatDataService.addLetterStats(letter)
+            letterStatDataService.addLetterStats(letter, timezone)
         }
         LOG.info { "sent" }
     }

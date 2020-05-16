@@ -33,6 +33,9 @@ internal class LetterStatDataServiceTest {
     @RelaxedMockK
     lateinit var letterService: LetterService
 
+    @RelaxedMockK
+    lateinit var userService: UserService
+
     @InjectMockKs
     lateinit var service: LetterStatDataService
 
@@ -46,6 +49,7 @@ internal class LetterStatDataServiceTest {
         val letter3 = SealedLetterEnvelop(getDateTime("2020-04-10T12:00:00.000+01:00"), getDateTime("2020-05-15T12:00:00.000+01:00"))
         val letter4 = SealedLetterEnvelop(getDateTime("2020-04-15T12:00:00.000+01:00"), getDateTime("2020-05-15T12:00:00.000+01:00"))
         every { letterService.getLettersDatesSequence(any()) } returns sequenceOf(letter1, letter2, letter3, letter4)
+        every { userService.loadUserData(any()).timeZone } returns "Africa/Tunis"
         val expectedSent = arrayOf(
                 LetterStat(Day(2020, 4, 1), 1),
                 LetterStat(Day(2020, 4, 10), 2),
@@ -63,6 +67,7 @@ internal class LetterStatDataServiceTest {
 
         // Then
         verify(ordering = Ordering.ORDERED) {
+            userService.loadUserData(LOGIN)
             letterService.getLettersDatesSequence(LOGIN)
             letterStatDataRepository.setStatData(LOGIN, capture(sentSlot), capture(openSlot))
         }
@@ -75,17 +80,18 @@ internal class LetterStatDataServiceTest {
     fun `should add letter stats`() {
         // Given
         val sent = getDateTime("2017-02-16T23:00:00.000+00:00")
-        val open = getDateTime("2018-12-03T01:00:00.000+00:00")
+        val open = getDateTime("2018-12-03T21:00:00.000+00:00")
+        val timeZone = "Europe/Moscow"
         val letter = mockk<Letter> {
             every { login } returns LOGIN
             every { sendDate } returns sent
             every { openDate } returns open
         }
-        val expectedSent = Day(2017, 2, 16)
-        val expectedOpen = Day(2018, 12, 3)
+        val expectedSent = Day(2017, 2, 17)
+        val expectedOpen = Day(2018, 12, 4)
 
         // When
-        service.addLetterStats(letter)
+        service.addLetterStats(letter, timeZone)
 
         // Then
         verify {
