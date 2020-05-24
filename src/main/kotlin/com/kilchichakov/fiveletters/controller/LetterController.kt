@@ -6,6 +6,7 @@ import com.kilchichakov.fiveletters.controller.ControllerUtils.getLogin
 import com.kilchichakov.fiveletters.controller.ControllerUtils.processAndRespondCode
 import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.dto.GetFutureLettersResponse
+import com.kilchichakov.fiveletters.model.dto.GetLetterStatResponse
 import com.kilchichakov.fiveletters.model.dto.GetNewLettersResponse
 import com.kilchichakov.fiveletters.model.dto.GetTimePeriodsResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
@@ -14,6 +15,7 @@ import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.LetterService
+import com.kilchichakov.fiveletters.service.LetterStatDataService
 import com.kilchichakov.fiveletters.service.TimePeriodService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,6 +30,9 @@ class LetterController {
 
     @Autowired
     lateinit var letterService: LetterService
+
+    @Autowired
+    lateinit var letterStatDataService: LetterStatDataService
 
     @Autowired
     lateinit var timePeriodService: TimePeriodService
@@ -71,10 +76,21 @@ class LetterController {
 
     @GetMapping("/future")
     @Logged
+    @Deprecated("switch to more efficient getLetterStats()")
     fun getFutureLetters(): GetFutureLettersResponse {
+        val login = getLogin()!!
         LOG.info { "asked to get future letters" }
-        val letters = letterService.getFutureLetters(getLogin()!!)
+        val letters = letterService.getFutureLetters(login)
         return GetFutureLettersResponse(letters)
+                .logResult()
+    }
+
+    @GetMapping("/stats")
+    @Logged
+    fun getLetterStats(): GetLetterStatResponse {
+        val login = getLogin()!!
+        LOG.info { "asked for letter stats" }
+        return letterStatDataService.getLetterStats(login)
                 .logResult()
     }
 

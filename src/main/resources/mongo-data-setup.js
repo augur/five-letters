@@ -121,3 +121,20 @@ db.userData.update(
   true
 )
 
+db.job.save(
+    {
+        schedule:
+            {
+                nextExecutionTime: {"$date":{"$numberLong":"1590850800000"}},
+                repeatMode: "ALWAYS",
+                repeatInterval: {"$numberLong":"3600000"}
+            },
+        payload:
+            {
+                type: "periodicLetterStat",
+                "data": ""
+            },
+        status: "ACTIVE"
+    }
+)
+

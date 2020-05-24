@@ -1,12 +1,20 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.exception.DatabaseException
 import com.kilchichakov.fiveletters.getDateTime
 import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.LetterStat
+import com.kilchichakov.fiveletters.model.LetterStatData
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
+import com.kilchichakov.fiveletters.model.dto.GetLetterStatResponse
 import com.kilchichakov.fiveletters.repository.LetterStatDataRepository
 import com.kilchichakov.fiveletters.setUpTransactionWrapperMock
+import com.mongodb.client.MongoCursor
+import dev.ktobe.toBe
+import dev.ktobe.toBeEqual
+import dev.ktobe.toContainExactly
+import dev.ktobe.toContainJust
 import io.mockk.Ordering
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -17,6 +25,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.Date
@@ -40,6 +49,41 @@ internal class LetterStatDataServiceTest {
     lateinit var service: LetterStatDataService
 
     val LOGIN = "loupa"
+
+    @Test
+    fun `should get letter stat data for login`() {
+        // Given
+        val mockSent = listOf(mockk<LetterStat>())
+        val mockOpen = listOf(mockk<LetterStat>())
+        val statData = mockk<LetterStatData> {
+            every { sentStat } returns mockSent
+            every { openStat } returns mockOpen
+            every { unorderedSent } returns emptyList()
+            every { unorderedOpen } returns emptyList()
+        }
+        every { letterStatDataRepository.getStatData(any()) } returns statData
+
+        // When
+        val actual = service.getLetterStats(LOGIN)
+
+        // Then
+        actual toBeEqual GetLetterStatResponse(mockSent, mockOpen)
+        verify {
+            letterStatDataRepository.getStatData(LOGIN)
+        }
+        confirmVerified(letterStatDataRepository)
+    }
+
+    @Test
+    fun `should throw if no stat data found`() {
+        // Given
+        every { letterStatDataRepository.getStatData(any()) } returns null
+
+        // Then
+        assertThatCode {
+            service.getLetterStats(LOGIN)
+        }.isInstanceOf(DatabaseException::class.java)
+    }
 
     @Test
     fun `should recalculate letter stat data`() {
@@ -98,5 +142,69 @@ internal class LetterStatDataServiceTest {
             letterStatDataRepository.addStat(LOGIN, expectedSent, expectedOpen)
         }
         confirmVerified(letterStatDataRepository)
+    }
+
+    @Test
+    fun `should get a sequence of logins with unordered stats`() {
+        // Given
+        val iterator = mockk<MongoCursor<String>>()
+        every { letterStatDataRepository.iterateLoginsWithUnorderedStats().iterator() } returns iterator
+
+        // When
+        val actual = service.getLoginsWithUnorderedStatsSequence()
+
+        // Then
+        verify {
+            letterStatDataRepository.iterateLoginsWithUnorderedStats()
+        }
+        confirmVerified(letterStatDataRepository)
+        actual.iterator() toBe iterator
+    }
+
+    @Test
+    fun `should do stats ordering`() {
+        // Given
+        setUpTransactionWrapperMock(transactionWrapper)
+        val sentStat1 = LetterStat(Day(2020, 5, 1), 2)
+        val sentStat2 = LetterStat(Day(2020, 5, 5), 4)
+        val openStat1 = LetterStat(Day(2021, 5, 1), 1)
+        val openStat2 = LetterStat(Day(2020, 6, 5), 2)
+        val openStat3 = LetterStat(Day(2020, 5, 9), 3)
+        val sentDay1 = Day(2020, 5, 5)
+        val sentDay2 = Day(2020, 5, 8)
+        val openDay1 = Day(2021, 5, 1)
+        val openDay2 = Day(2020, 8, 7)
+
+        val statData = mockk<LetterStatData> {
+            every { sentStat } returns listOf(sentStat1, sentStat2)
+            every { openStat } returns listOf(openStat1, openStat2, openStat3)
+            every { unorderedSent } returns listOf(sentDay1, sentDay2)
+            every { unorderedOpen } returns listOf(openDay1, openDay2)
+        }
+        every { letterStatDataRepository.getStatData(any()) } returns statData
+
+        // When
+        service.orderStats(LOGIN)
+
+        // Then
+        val slotSent = slot<List<LetterStat>>()
+        val slotOpen = slot<List<LetterStat>>()
+        verify {
+            transactionWrapper.executeInTransaction(any())
+            letterStatDataRepository.getStatData(LOGIN)
+            letterStatDataRepository.setStatData(LOGIN, capture(slotSent), capture(slotOpen))
+        }
+        slotSent.captured toContainExactly listOf( // should be used toContainUnorderedExactly~
+                LetterStat(Day(2020, 5, 5), 5),
+                LetterStat(Day(2020, 5, 8), 1),
+                LetterStat(Day(2020, 5, 1), 2)
+        )
+        slotOpen.captured toContainExactly listOf( // should be used toContainUnorderedExactly~
+                LetterStat(Day(2020, 5, 9), 3),
+                LetterStat(Day(2021, 5, 1), 2),
+                LetterStat(Day(2020, 8, 7), 1),
+                LetterStat(Day(2020, 6, 5), 2)
+        )
+        confirmVerified(transactionWrapper, letterStatDataRepository)
     }
 }

@@ -5,16 +5,22 @@ import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.LetterStat
 import com.kilchichakov.fiveletters.model.LetterStatData
+import com.kilchichakov.fiveletters.repository.UserDataRepository.Login
 import com.kilchichakov.fiveletters.service.findOneInTransaction
 import com.kilchichakov.fiveletters.service.updateOneInTransaction
+import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.MongoIterable
 import org.bson.conversions.Bson
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
 import org.litote.kmongo.getCollection
+import org.litote.kmongo.ne
+import org.litote.kmongo.or
 import org.litote.kmongo.push
 import org.litote.kmongo.setValue
+import org.litote.kmongo.size
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -55,6 +61,15 @@ class LetterStatDataRepository(
         val result = collection.updateOneInTransaction(byLogin, update, false)
         LOG.info { "updated ${result.modifiedCount} Letter Stats" }
         return result.modifiedCount == 1L
+    }
+
+    fun iterateLoginsWithUnorderedStats(): Iterable<String> {
+        val filter = or(
+                LetterStatData::unorderedSent ne emptyList(),
+                LetterStatData::unorderedOpen ne emptyList()
+        )
+        return collection.find(filter, Login::class.java)
+                .map { it.login }
     }
 
     private fun prepare(stats: List<LetterStat>): List<LetterStat> {

@@ -8,12 +8,14 @@ import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobPayload
 import com.kilchichakov.fiveletters.model.job.JobSchedule
 import com.kilchichakov.fiveletters.model.job.JobStatus
+import com.kilchichakov.fiveletters.model.job.PeriodicLetterStatJobPayload
 import com.kilchichakov.fiveletters.model.job.RepeatMode
 import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
 import com.kilchichakov.fiveletters.service.job.DailyMailingJobProcessor
 import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
+import com.kilchichakov.fiveletters.service.job.PeriodicLetterStatJobProcessor
 import com.kilchichakov.fiveletters.util.now
 import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,6 +46,9 @@ class JobService {
 
     @Autowired
     private lateinit var dailyMailingJobProcessor: DailyMailingJobProcessor
+
+    @Autowired
+    private lateinit var periodicLetterStatJobProcessor: PeriodicLetterStatJobProcessor
 
     fun scheduleEmailConfirmation(login: String) {
         LOG.info { "scheduling email confirmation for $login" }
@@ -121,6 +126,10 @@ class JobService {
                 is DailyMailingJobPayload -> {
                     LOG.info { "payload type: DailyMailingJobPayload" }
                     dailyMailingJobProcessor.process(payload)
+                }
+                is PeriodicLetterStatJobPayload -> {
+                    LOG.info { "payload type: PeriodicLetterStatJobPayload" }
+                    periodicLetterStatJobProcessor.process(payload)
                 }
             }
             true

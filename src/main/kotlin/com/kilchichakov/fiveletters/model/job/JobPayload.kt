@@ -10,7 +10,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 @JsonSubTypes(
         JsonSubTypes.Type(value = TestJobPayload::class, name = "test"),
         JsonSubTypes.Type(value = EmailConfirmSendingJobPayload::class, name = "emailConfirmSend"),
-        JsonSubTypes.Type(value = DailyMailingJobPayload::class, name = "dailyMailing")
+        JsonSubTypes.Type(value = DailyMailingJobPayload::class, name = "dailyMailing"),
+        JsonSubTypes.Type(value = PeriodicLetterStatJobPayload::class, name = "periodicLetterStat")
 )
 sealed class JobPayload
 
@@ -19,3 +20,5 @@ data class TestJobPayload(val data: String): JobPayload()
 data class EmailConfirmSendingJobPayload(val email: String, val code: String): JobPayload()
 
 data class DailyMailingJobPayload(val data: String): JobPayload()
+
+data class PeriodicLetterStatJobPayload(val data: String): JobPayload()

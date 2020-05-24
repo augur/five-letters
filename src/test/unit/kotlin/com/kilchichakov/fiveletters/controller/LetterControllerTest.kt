@@ -5,12 +5,15 @@ import com.kilchichakov.fiveletters.exception.ErrorCode
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
+import com.kilchichakov.fiveletters.model.dto.GetLetterStatResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.LetterService
+import com.kilchichakov.fiveletters.service.LetterStatDataService
 import com.kilchichakov.fiveletters.service.TimePeriodService
+import dev.ktobe.toBe
 import dev.ktobe.toBeEqual
 import dev.ktobe.toContainJust
 import io.mockk.confirmVerified
@@ -34,8 +37,10 @@ internal class LetterControllerTest : ControllerTestSuite() {
     lateinit var letterService: LetterService
 
     @RelaxedMockK
-    lateinit var timePeriodService: TimePeriodService
+    lateinit var letterStatDataService: LetterStatDataService
 
+    @RelaxedMockK
+    lateinit var timePeriodService: TimePeriodService
     @InjectMockKs
     lateinit var controller: LetterController
 
@@ -119,6 +124,23 @@ internal class LetterControllerTest : ControllerTestSuite() {
             letterService.getFutureLetters(LOGIN)
         }
         confirmVerified(letterService)
+    }
+
+    @Test
+    fun `should get letter stats`() {
+        // Given
+        val expected = mockk<GetLetterStatResponse>()
+        every { letterStatDataService.getLetterStats(any()) } returns expected
+
+        // When
+        val actual = controller.getLetterStats()
+
+        // Then
+        actual toBe expected
+        verify {
+            letterStatDataService.getLetterStats(LOGIN)
+        }
+        confirmVerified(letterStatDataService)
     }
 
     @Test

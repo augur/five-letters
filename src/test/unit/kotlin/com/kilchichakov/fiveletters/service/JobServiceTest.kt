@@ -8,11 +8,13 @@ import com.kilchichakov.fiveletters.model.job.Job
 import com.kilchichakov.fiveletters.model.job.JobPayload
 import com.kilchichakov.fiveletters.model.job.JobSchedule
 import com.kilchichakov.fiveletters.model.job.JobStatus
+import com.kilchichakov.fiveletters.model.job.PeriodicLetterStatJobPayload
 import com.kilchichakov.fiveletters.model.job.RepeatMode
 import com.kilchichakov.fiveletters.model.job.TestJobPayload
 import com.kilchichakov.fiveletters.repository.JobRepository
 import com.kilchichakov.fiveletters.service.job.DailyMailingJobProcessor
 import com.kilchichakov.fiveletters.service.job.EmailConfirmJobProcessor
+import com.kilchichakov.fiveletters.service.job.PeriodicLetterStatJobProcessor
 import com.kilchichakov.fiveletters.setUpTransactionWrapperMock
 import com.mongodb.client.ClientSession
 import io.mockk.confirmVerified
@@ -58,6 +60,9 @@ internal class JobServiceTest {
 
     @RelaxedMockK
     lateinit var dailyMailingJobProcessor: DailyMailingJobProcessor
+
+    @RelaxedMockK
+    lateinit var periodicLetterStatJobProcessor: PeriodicLetterStatJobProcessor
 
     @InjectMockKs
     lateinit var service: JobService
@@ -306,5 +311,19 @@ internal class JobServiceTest {
         assertThat(actual).isEqualTo(true)
         verify { dailyMailingJobProcessor.process(payload) }
         confirmVerified(dailyMailingJobProcessor)
+    }
+
+    @Test
+    fun `should execute with Periodic LetterStat Processing payload`() {
+        // Given
+        val payload = PeriodicLetterStatJobPayload("stub")
+
+        // When
+        val actual = service.invokePrivate("executePayload", payload)
+
+        // Then
+        assertThat(actual).isEqualTo(true)
+        verify { periodicLetterStatJobProcessor.process(payload) }
+        confirmVerified(periodicLetterStatJobProcessor)
     }
 }
