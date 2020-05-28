@@ -1,4 +1,4 @@
 #!/bin/bash
-BACKEND_VERSION=20.2.3
+BACKEND_VERSION=20.5.1
 
 docker build -t docker.pkg.github.com/augur/five-letters/fl-backend:$BACKEND_VERSION .
