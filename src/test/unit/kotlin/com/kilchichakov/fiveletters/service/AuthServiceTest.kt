@@ -68,7 +68,7 @@ internal class AuthServiceTest {
         every { authenticationManager.authenticate(any()) } throws DisabledException("test")
 
         // When
-        assertThrows<Exception>("USER_DISABLED") { service.authenticate("user", "password") }
+        assertThrows<DisabledException> { service.authenticate("user", "password") }
     }
 
     @Test
@@ -77,6 +77,6 @@ internal class AuthServiceTest {
         every { authenticationManager.authenticate(any()) } throws BadCredentialsException("test")
 
         // When
-        assertThrows<Exception>("INVALID_CREDENTIALS") { service.authenticate("user", "password") }
+        assertThrows<BadCredentialsException> { service.authenticate("user", "password") }
     }
 }

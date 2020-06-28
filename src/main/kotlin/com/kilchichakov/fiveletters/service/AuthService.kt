@@ -21,17 +21,11 @@ class AuthService {
     private lateinit var jwtService: JwtService
 
     fun authenticate(username: String, password: String): AuthResponse {
-        try {
-            LOG.info { "authenticating" }
-            val authed = authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username, password))
-            LOG.info { "authed is $authed" }
-            val userDetails = authed.principal as UserDetails
-            LOG.info { "userDetails are $userDetails" }
-            return AuthResponse(jwtService.generateToken(userDetails))
-        } catch (e: DisabledException) {
-            throw Exception("USER_DISABLED", e)
-        } catch (e: BadCredentialsException) {
-            throw Exception("INVALID_CREDENTIALS", e)
-        }
+        LOG.info { "authenticating" }
+        val authed = authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username, password))
+        LOG.info { "authed is $authed" }
+        val userDetails = authed.principal as UserDetails
+        LOG.info { "userDetails are $userDetails" }
+        return AuthResponse(jwtService.generateToken(userDetails))
     }
 }
