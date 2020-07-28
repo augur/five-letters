@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DatabaseException
+import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
@@ -10,6 +11,7 @@ import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.repository.LetterRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -38,12 +40,13 @@ class LetterService {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone(timezone))
         val letter = Letter(null, login, message, false, Calendar.getInstance().time,
                 calcOpenDate(period, calendar))
-        LOG.info { "sending letter $letter" }
-        transactionWrapper.executeInTransaction {
-            letterRepository.saveNewLetter(letter)
-            letterStatDataService.addLetterStats(letter, timezone)
-        }
-        LOG.info { "sent" }
+        doSend(letter, timezone)
+    }
+
+    fun sendLetter(login: String, message: String, openDate: Day) {
+        val timezone = userService.loadUserData(login).timeZone
+        val letter = Letter(null, login, message, false, Calendar.getInstance().time, openDate.toDate(timezone))
+        doSend(letter, timezone)
     }
 
     fun getNewLetters(login: String): List<Letter> {
@@ -102,6 +105,27 @@ class LetterService {
             calendar.add(Calendar.YEAR, years)
         }
         // Setting to midnight
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.time
+    }
+
+    private fun doSend(letter: Letter, timezone: String) {
+        LOG.info { "sending letter $letter" }
+        transactionWrapper.executeInTransaction {
+            letterRepository.saveNewLetter(letter)
+            letterStatDataService.addLetterStats(letter, timezone)
+        }
+        LOG.info { "sent" }
+    }
+
+    private fun Day.toDate(timezone: String): Date {
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone(timezone))
+        calendar.set(Calendar.YEAR, year.toInt())
+        calendar.set(Calendar.MONTH, month.toInt() - 1)
+        calendar.set(Calendar.DAY_OF_MONTH, day.toInt())
         calendar.set(Calendar.HOUR_OF_DAY, 0)
         calendar.set(Calendar.MINUTE, 0)
         calendar.set(Calendar.SECOND, 0)

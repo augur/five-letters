@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.controller
 
 import com.kilchichakov.fiveletters.ControllerTestSuite
 import com.kilchichakov.fiveletters.exception.ErrorCode
+import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
@@ -9,6 +10,7 @@ import com.kilchichakov.fiveletters.model.dto.GetLetterStatResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.PageRequest
+import com.kilchichakov.fiveletters.model.dto.SendLetterFreeDateRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.LetterStatDataService
@@ -60,6 +62,26 @@ internal class LetterControllerTest : ControllerTestSuite() {
             ControllerUtils.getLogin()
             inputValidationService.validate(request)
             letterService.sendLetter(LOGIN, message, period)
+        }
+        confirmVerified(inputValidationService, letterService)
+    }
+
+    @Test
+    fun `should perform send letter with free date call`() {
+        // Given
+        val message = "some letter"
+        val day = Day(2020, 7, 13)
+        val request = SendLetterFreeDateRequest(message, day)
+
+        // When
+        val actual = controller.sendFreeDate(request)
+
+        // Then
+        actual toBeEqual OperationCodeResponse(0)
+        verify {
+            ControllerUtils.getLogin()
+            inputValidationService.validate(request)
+            letterService.sendLetter(LOGIN, message, day)
         }
         confirmVerified(inputValidationService, letterService)
     }

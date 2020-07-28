@@ -1,10 +1,12 @@
 package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.invokePrivate
+import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
+import com.kilchichakov.fiveletters.model.dto.SendLetterFreeDateRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import com.kilchichakov.fiveletters.service.InputValidationService.*
@@ -16,6 +18,8 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.time.Instant
+import java.time.ZoneId
 
 @ExtendWith(MockKExtension::class)
 internal class InputValidationServiceTest {
@@ -143,6 +147,24 @@ internal class InputValidationServiceTest {
         }
     }
 
+    @Test
+    fun `should validate send letter free date request`() {
+        // Given
+        val message = "some message"
+        val day = Day(3001, 10, 25)
+        val spy = spyk(service, recordPrivateCalls = true)
+        every { spy["checkMessage"](any<ValidationResult>(), any<String>()) } returns 0
+        every { spy["checkOpenDate"](any<ValidationResult>(), any<Day>()) } returns 0
+
+        // When
+        spy.validate(SendLetterFreeDateRequest(message, day))
+
+        // Then
+        verify {
+            spy["checkMessage"](any<ValidationResult>(), message)
+            spy["checkOpenDate"](any<ValidationResult>(), day)
+        }
+    }
 
     @Test
     fun `should check login`() {
@@ -335,6 +357,31 @@ internal class InputValidationServiceTest {
         testCases.forEach {
             val vResult = ValidationResult(ArrayList())
             service.invokePrivate("checkNickname", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
+    fun `should check open date`() {
+        // Given
+        val now = Instant.now().atZone(ZoneId.systemDefault()).toLocalDate()
+        val yesterday = now.minusDays(1)
+        val tomorrow = now.plusDays(1)
+
+        val dayNow = Day(now.year.toShort(), now.monthValue.toByte(), now.dayOfMonth.toByte())
+        val dayYesterday = Day(yesterday.year.toShort(), yesterday.monthValue.toByte(), yesterday.dayOfMonth.toByte())
+        val dayTomorrow = Day(tomorrow.year.toShort(), tomorrow.monthValue.toByte(), tomorrow.dayOfMonth.toByte())
+
+        val testCases = listOf(
+                TestCase(dayNow, false),
+                TestCase(dayYesterday, false),
+                TestCase(dayTomorrow, true)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkOpenDate", vResult, it.value)
             assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
         }
     }

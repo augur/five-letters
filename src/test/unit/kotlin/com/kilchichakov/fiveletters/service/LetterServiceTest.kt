@@ -1,6 +1,7 @@
 package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.exception.DatabaseException
+import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.Page
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
@@ -91,6 +92,37 @@ internal class LetterServiceTest {
             letterStatDataService.addLetterStats(slot.captured, timezone)
         }
         confirmVerified(timePeriodService, letterStatDataService)
+    }
+
+    @Test
+    fun `should send letter with free open date`() {
+        // Given
+        val login = "loupa"
+        val message = "some messg"
+        val openDate = Day(2100, 7, 10)
+        val timezone = "Singapore"
+        val slot = slot<Letter>()
+        every { letterRepository.saveNewLetter(capture(slot)) } just Runs
+        every { userService.loadUserData(any()).timeZone } returns timezone
+        setUpTransactionWrapperMock(transactionWrapper)
+        // 07/09/2100 @ 4:00pm (UTC)
+        val expected = Instant.ofEpochSecond(4118832000)
+
+        // When
+        service.sendLetter(login, message, openDate)
+
+        // Then
+        assertThat(slot.captured._id).isNull()
+        assertThat(slot.captured.login).isEqualTo(login)
+        assertThat(slot.captured.message).isEqualTo(message)
+        assertThat(slot.captured.read).isFalse()
+        assertThat(slot.captured.sendDate).isToday()
+        assertThat(slot.captured.openDate).isEqualToIgnoringMillis(Date.from(expected))
+        verify {
+            userService.loadUserData(login)
+            letterStatDataService.addLetterStats(slot.captured, timezone)
+        }
+        confirmVerified(userService, letterStatDataService)
     }
 
     @Test

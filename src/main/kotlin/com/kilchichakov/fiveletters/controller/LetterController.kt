@@ -12,6 +12,7 @@ import com.kilchichakov.fiveletters.model.dto.GetTimePeriodsResponse
 import com.kilchichakov.fiveletters.model.dto.LetterDto
 import com.kilchichakov.fiveletters.model.dto.OperationCodeResponse
 import com.kilchichakov.fiveletters.model.dto.PageRequest
+import com.kilchichakov.fiveletters.model.dto.SendLetterFreeDateRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.LetterService
@@ -47,6 +48,16 @@ class LetterController {
             inputValidationService.validate(request)
             LOG.info { "asked to send new letter: $request" }
             letterService.sendLetter(login!!, request.message, request.period)
+        }.logResult()
+    }
+
+    @PostMapping("/sendFreeDate")
+    @Logged
+    fun sendFreeDate(@RequestBody request: SendLetterFreeDateRequest): OperationCodeResponse {
+        return processAndRespondCode { login ->
+            inputValidationService.validate(request)
+            LOG.info { "asked to send new letter: $request" }
+            letterService.sendLetter(login!!, request.message, request.openDate)
         }.logResult()
     }
 

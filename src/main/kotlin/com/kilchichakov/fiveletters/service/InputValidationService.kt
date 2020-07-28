@@ -2,13 +2,17 @@ package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DataException
+import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
+import com.kilchichakov.fiveletters.model.dto.SendLetterFreeDateRequest
 import com.kilchichakov.fiveletters.model.dto.SendLetterRequest
 import com.kilchichakov.fiveletters.model.dto.UpdateProfileRequest
 import org.springframework.stereotype.Service
+import java.time.Instant
+import java.time.ZoneId
 import java.util.TimeZone
 
 @Service
@@ -24,6 +28,7 @@ class InputValidationService {
             is AdminChangePasswordRequest -> doValidate(input)
             is PageRequest -> doValidate(input)
             is UpdateProfileRequest -> doValidate(input)
+            is SendLetterFreeDateRequest -> doValidate(input)
             else -> LOG.warn { "no validation rules for $input" }
         }
     }
@@ -72,6 +77,13 @@ class InputValidationService {
             checkEmail(updateProfileRequest.email)
             checkNickname(updateProfileRequest.nickname)
             checkTimeZone(updateProfileRequest.timeZone)
+        }
+    }
+
+    private fun doValidate(sendLetterFreeDateRequest: SendLetterFreeDateRequest) {
+        validation(sendLetterFreeDateRequest) {
+            checkMessage(sendLetterFreeDateRequest.message)
+            checkOpenDate(sendLetterFreeDateRequest.openDate)
         }
     }
 
@@ -136,6 +148,12 @@ class InputValidationService {
     private fun ValidationResult.checkNickname(nickname: String) {
         if (nickname.isEmpty()) errors.add(ValidationError("nickname", "is empty"))
         if (nickname.length > 30) errors.add(ValidationError("nickname", "is too long"))
+    }
+
+    private fun ValidationResult.checkOpenDate(openDate: Day) {
+        val localDate = Instant.now().atZone(ZoneId.systemDefault()).toLocalDate()
+        val today = Day(localDate.year.toShort(), localDate.monthValue.toByte(), localDate.dayOfMonth.toByte())
+        if (openDate <= today) errors.add(ValidationError("openDate", "not in future"))
     }
 
     data class ValidationError(val field: String, val message: String)
