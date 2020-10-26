@@ -9,6 +9,7 @@ val embeddedMongoVersion = "2.2.0"
 val muLoggingVersion = "1.5.9"
 val slf4jVersion = "1.7.5"
 val springMockkVersion = "2.0.1"
+val googleApiClientVersion = "1.30.10"
 
 plugins {
 	id("org.springframework.boot") version "2.2.4.RELEASE"
@@ -19,7 +20,7 @@ plugins {
 }
 
 group = "com.kilchichakov"
-version = "20.7.1"
+version = "20.9.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -44,6 +45,7 @@ dependencies {
 	implementation("com.auth0:java-jwt:$javaJwtVersion")
 	implementation("io.github.microutils:kotlin-logging:$muLoggingVersion")
 	implementation("org.slf4j:slf4j-api:$slf4jVersion")
+	implementation("com.google.api-client:google-api-client:$googleApiClientVersion")
 	//implementation("org.slf4j:slf4j-log4j12:$slf4jVersion")
 
 	testImplementation("dev.ktobe:ktobe:0.0.1")
