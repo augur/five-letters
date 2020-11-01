@@ -124,8 +124,8 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
         // Given
         val code = "code"
         val login = "loupa"
-        val userData1 = UserData(null, login, "sdfs", "email", false, code)
-        val userData2 = UserData(null, "other", "sdfs", "email", false, "other")
+        val userData1 = UserData(null, login, "sdfs", "email1", false, code)
+        val userData2 = UserData(null, "other", "sdfs", "email2", false, "other")
         collection.save(userData1)
         collection.save(userData2)
 
@@ -144,8 +144,8 @@ internal class UserDataRepositoryTest : MongoTestSuite() {
     @Test
     fun `should get all user logins`() {
         // Given
-        val userData1 = UserData(null, "loupa", "sdfdss", "email", false, null)
-        val userData2 = UserData(null, "poupa", "sdfs", "email", false, "other")
+        val userData1 = UserData(null, "loupa", "sdfdss", "email1", false, null)
+        val userData2 = UserData(null, "poupa", "sdfs", "email2", false, "other")
         collection.save(userData1)
         collection.save(userData2)
 
