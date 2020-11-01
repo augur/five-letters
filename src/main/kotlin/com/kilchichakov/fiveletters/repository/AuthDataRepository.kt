@@ -41,7 +41,7 @@ class AuthDataRepository(
         val update = setValue(AuthData::password, encodedPassword)
         val result = collection.updateOne(byLogin, update)
         LOG.info { "updated ${result.modifiedCount} users" }
-        return result.modifiedCount == 1L;
+        return result.modifiedCount == 1L
     }
 
     fun findAuthDataByEmail(email: String): AuthDataByEmailSearchResult {

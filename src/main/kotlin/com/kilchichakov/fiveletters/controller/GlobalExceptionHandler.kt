@@ -4,6 +4,7 @@ import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.BackendException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -18,8 +19,8 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException::class)
-    fun handleAuthException(e: BadCredentialsException): ResponseEntity<BadCredentialsException> {
-        return ResponseEntity(e, HttpStatus.FORBIDDEN)
+    fun handleAuthException(e: BadCredentialsException): ResponseEntity<ExceptionResponse> {
+        return ResponseEntity(ExceptionResponse(Instant.now(), e.message), HttpStatus.FORBIDDEN)
     }
 
     @ExceptionHandler(RuntimeException::class)

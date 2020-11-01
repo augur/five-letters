@@ -45,3 +45,18 @@ db.letter.createIndex(
     },
     { unique: false }
 )
+
+// === 20.9.1 ===
+
+db.userData.createIndex(
+    {
+        "email": 1,
+        "emailConfirmed": 1
+    },
+    {
+        unique: true,
+        partialFilterExpression: {
+            "email": { $exists: true }
+        }
+    }
+)

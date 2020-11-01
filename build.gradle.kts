@@ -14,8 +14,8 @@ val googleApiClientVersion = "1.30.10"
 plugins {
 	id("org.springframework.boot") version "2.2.4.RELEASE"
 	id("io.spring.dependency-management") version "1.0.7.RELEASE"
-	kotlin("jvm") version "1.3.61"
-	kotlin("plugin.spring") version "1.3.61"
+	kotlin("jvm") version "1.4.10"
+	kotlin("plugin.spring") version "1.4.10"
     `maven-publish`
 }
 

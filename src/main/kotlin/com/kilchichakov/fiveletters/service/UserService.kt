@@ -7,6 +7,7 @@ import com.kilchichakov.fiveletters.exception.SystemStateException
 import com.kilchichakov.fiveletters.exception.TermsOfUseException
 import com.kilchichakov.fiveletters.model.AuthData
 import com.kilchichakov.fiveletters.model.UserData
+import com.kilchichakov.fiveletters.model.authorities
 import com.kilchichakov.fiveletters.repository.SystemStateRepository
 import com.kilchichakov.fiveletters.repository.AuthDataRepository
 import com.kilchichakov.fiveletters.repository.UserDataRepository
@@ -64,8 +65,7 @@ class UserService : UserDetailsService {
     override fun loadUserByUsername(login: String): UserDetails {
         LOG.info { "loading UserDetails by login $login" }
         val data = authDataRepository.loadUserData(login)!!
-        val authorities = if (data.admin) listOf(SimpleGrantedAuthority("ROLE_ADMIN")) else emptyList()
-        return User(data.login, data.password, authorities)
+        return User(data.login, data.password, data.authorities)
     }
 
     fun changeUserPassword(login: String, rawPassword: String) {

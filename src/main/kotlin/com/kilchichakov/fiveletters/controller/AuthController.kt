@@ -1,17 +1,18 @@
 package com.kilchichakov.fiveletters.controller
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.jackson2.JacksonFactory
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
-import com.kilchichakov.fiveletters.model.UserData
+import com.kilchichakov.fiveletters.model.dto.AuthGoogleResponse
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.AuthResponse
+import com.kilchichakov.fiveletters.service.AuthGoogleService
 import com.kilchichakov.fiveletters.service.AuthService
 import com.kilchichakov.fiveletters.service.InputValidationService
-import com.kilchichakov.fiveletters.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -26,6 +27,9 @@ class AuthController {
     private lateinit var authService: AuthService
 
     @Autowired
+    private lateinit var authGoogleService: AuthGoogleService
+
+    @Autowired
     protected lateinit var inputValidationService: InputValidationService
 
     @PostMapping
@@ -38,4 +42,10 @@ class AuthController {
         return result.logResult()
     }
 
+    @PostMapping("/google")
+    @Logged
+    fun googleAuthenticate(@RequestBody idTokenString: String): AuthGoogleResponse {
+        LOG.info { "request to authorize by Google id_token" }
+        return authGoogleService.authenticate(idTokenString).logResult()
+    }
 }
