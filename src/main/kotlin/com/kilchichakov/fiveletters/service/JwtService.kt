@@ -31,16 +31,17 @@ class JwtService(
             .build()
 
 
-    fun generateToken(userDetails: UserDetails): String {
+    fun generateToken(userDetails: UserDetails): EncodedJwt {
         val expires = Date.from(clock.instant().plus(ttlSeconds, ChronoUnit.SECONDS))
         val roles = (userDetails.authorities.map { a -> a.authority }).toTypedArray()
         LOG.info { "generating token: ${userDetails.username}, $issuer, ${expires}, $algorithm, ${roles.toList()}" }
-        return JWT.create()
+        val code = JWT.create()
                 .withIssuer(issuer)
                 .withSubject(userDetails.username)
                 .withExpiresAt(expires)
                 .withArrayClaim("roles", roles)
                 .sign(algorithm)
+        return EncodedJwt(code, expires)
     }
 
     /**
@@ -61,5 +62,10 @@ class JwtService(
             val username: String?,
             val roles: List<String>,
             val expiresAt: Date
+    )
+
+    data class EncodedJwt(
+            val code: String,
+            val dueDate: Date,
     )
 }

@@ -19,6 +19,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.UserDetails
 import java.lang.Exception
+import java.util.Date
+import org.springframework.beans.factory.annotation.Autowired
 
 
 @ExtendWith(MockKExtension::class)
@@ -30,6 +32,9 @@ internal class AuthServiceTest {
     @RelaxedMockK
     lateinit var jwtService: JwtService
 
+    @RelaxedMockK
+    lateinit var refreshTokenService: RefreshTokenService
+
     @InjectMockKs
     lateinit var service: AuthService
 
@@ -40,26 +45,42 @@ internal class AuthServiceTest {
         val password = "pwd"
         val authentication = mockk<Authentication>()
         val userDetals = mockk<UserDetails>()
-        val token = "some token"
-
+        val jwtCode = "some jwt code"
+        val jwtDueDate = mockk<Date>()
+        val token = mockk<JwtService.EncodedJwt> {
+            every { code } returns jwtCode
+            every { dueDate } returns jwtDueDate
+        }
         val slot = slot<UsernamePasswordAuthenticationToken>()
+        val rtCode = "some refresh code"
+        val rtDueDate = mockk<Date>()
+        val refreshToken = mockk<RefreshTokenService.RefreshToken> {
+            every { code } returns rtCode
+            every { dueDate } returns rtDueDate
+        }
 
         every { authenticationManager.authenticate(capture(slot)) } returns authentication
         every { authentication.principal } returns userDetals
         every { jwtService.generateToken(any()) } returns token
+        every { refreshTokenService.generateRefreshToken(any()) } returns refreshToken
 
         // When
         val actual = service.authenticate(user, password)
 
         // Then
-        assertThat(actual.jwt).isEqualTo(token)
+        assertThat(actual.login).isEqualTo(user)
+        assertThat(actual.jwt).isEqualTo(jwtCode)
+        assertThat(actual.jwtDueDate).isEqualTo(jwtDueDate)
+        assertThat(actual.refreshToken).isEqualTo(rtCode)
+        assertThat(actual.refreshTokenDueDate).isEqualTo(rtDueDate)
         assertThat(slot.captured.name).isEqualTo(user)
         assertThat(slot.captured.credentials).isEqualTo(password)
         verify {
             authenticationManager.authenticate(any())
             jwtService.generateToken(userDetals)
+            refreshTokenService.generateRefreshToken(user)
         }
-        confirmVerified(authenticationManager, jwtService)
+        confirmVerified(authenticationManager, jwtService, refreshTokenService)
     }
 
     @Test

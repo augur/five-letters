@@ -1,5 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
+import dev.ktobe.toBeEqual
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -42,7 +43,7 @@ internal class JwtServiceTest {
 
         // When
         val token = service.generateToken(userDetails)
-        val validated = service.validateToken(token)
+        val validated = service.validateToken(token.code)
 
         // Then
         verify {
@@ -50,9 +51,10 @@ internal class JwtServiceTest {
             userDetails.authorities
         }
 
+        token.dueDate toBeEqual Date.from(instant.plusMillis(42000))
         assertThat(validated.username).isEqualTo(user)
         assertThat(validated.roles).containsExactlyInAnyOrder("loupa", "poupa")
-        assertThat(validated.expiresAt).isEqualTo(Date.from(Instant.ofEpochMilli(12568458309000 + 42 * 1000)))
+        assertThat(validated.expiresAt).isEqualTo(Date.from(instant.plusMillis(42000)))
     }
 
     @Test()

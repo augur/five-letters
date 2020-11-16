@@ -9,6 +9,7 @@ import com.kilchichakov.fiveletters.model.authorities
 import com.kilchichakov.fiveletters.model.dto.AuthEmailNotFound
 import com.kilchichakov.fiveletters.model.dto.AuthEmailUnconfirmed
 import com.kilchichakov.fiveletters.model.dto.AuthGoogleResponse
+import com.kilchichakov.fiveletters.model.dto.AuthResponse
 import com.kilchichakov.fiveletters.model.dto.AuthSuccess
 import com.kilchichakov.fiveletters.repository.AuthDataRepository
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,6 +33,9 @@ class AuthGoogleService {
     @Autowired
     private lateinit var jobService: JobService
 
+    @Autowired
+    private lateinit var refreshTokenService: RefreshTokenService
+
     fun authenticate(idTokenString: String): AuthGoogleResponse {
         val tokenPart = idTokenString.substring(0, 20) + "..."
         LOG.info { "authenticating with idToken $tokenPart" }
@@ -46,7 +50,14 @@ class AuthGoogleService {
                 val user: UserDetails = User(searchResult.authData.login, "", searchResult.authData.authorities)
                 LOG.info { "built user=$user for JWT token" }
                 val jwt = jwtService.generateToken(user)
-                return AuthSuccess(jwt = jwt)
+                val refreshToken = refreshTokenService.generateRefreshToken(user.username)
+                return AuthSuccess(auth = AuthResponse(
+                        login = user.username,
+                        jwt = jwt.code,
+                        jwtDueDate = jwt.dueDate,
+                        refreshToken = refreshToken.code,
+                        refreshTokenDueDate = refreshToken.dueDate,
+                ))
             }
             is FoundEmailUnconfirmed -> {
                 LOG.info { "$email is unconfirmed, scheduling confirmation" }
