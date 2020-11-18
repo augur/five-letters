@@ -27,8 +27,3 @@ fun setUpTransactionWrapperMock(wrapper: TransactionWrapper, session: ClientSess
         firstArg<(ClientSession)->Any>().invoke(session ?: mockk())
     }
 }
-
-fun getDateTime(s: String): Date {
-    val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-    return format.parse(s)
-}

@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "com.kilchichakov"
-version = "20.9.1"
+version = "20.11.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -76,7 +76,7 @@ tasks.test {
 	useJUnitPlatform()
 
 	maxHeapSize = "1G"
-	exclude("**/*RepositoryTest*")
+//	exclude("**/*RepositoryTest*")
 }
 
 sourceSets {
@@ -84,9 +84,32 @@ sourceSets {
 		java {
 			srcDir("src/test/unit/kotlin")
 			srcDir("src/test/integration/kotlin")
+		}
+	}
+	create("mongoTest") {
+		compileClasspath += sourceSets.main.get().output
+		runtimeClasspath += sourceSets.main.get().output
+		java {
 			srcDir("src/test/mongo/kotlin")
 		}
 	}
+}
+
+val mongoTestImplementation by configurations.getting {
+	extendsFrom(configurations.implementation.get())
+	extendsFrom(configurations.testImplementation.get())
+}
+
+val mongoTest = task<Test>("mongoTest") {
+	description = "Runs integration tests"
+	group = "verification"
+
+	testClassesDirs = sourceSets["mongoTest"].output.classesDirs
+	classpath = sourceSets["mongoTest"].runtimeClasspath
+
+	useJUnitPlatform()
+	maxHeapSize = "1G"
+	include("**/*RepositoryTest*")
 }
 
 
