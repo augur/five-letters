@@ -1,6 +1,8 @@
 package com.kilchichakov.fiveletters.service
 
+import com.kilchichakov.fiveletters.model.AuthData
 import dev.ktobe.toBeEqual
+import dev.ktobe.toContainJust
 import io.mockk.every
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
@@ -57,7 +59,27 @@ internal class JwtServiceTest {
         assertThat(validated.expiresAt).isEqualTo(Date.from(instant.plusMillis(42000)))
     }
 
-    @Test()
+    @Test
+    fun `should generate token from auth data`() {
+        // Given
+        val user = "loupeaux"
+
+        val authData = mockk<AuthData>()
+        every { authData.login } returns user
+        every { authData.admin } returns true
+
+        // When
+        val token = service.generateToken(authData)
+        val validated = service.validateToken(token.code)
+
+        // Then
+        token.dueDate toBeEqual Date.from(instant.plusMillis(42000))
+        assertThat(validated.username).isEqualTo(user)
+        validated.roles toContainJust "ROLE_ADMIN"
+        assertThat(validated.expiresAt).isEqualTo(Date.from(instant.plusMillis(42000)))
+    }
+
+    @Test
     fun `should return null user on failure`() {
         // Given
         val token = "some.random.invalidtoken"

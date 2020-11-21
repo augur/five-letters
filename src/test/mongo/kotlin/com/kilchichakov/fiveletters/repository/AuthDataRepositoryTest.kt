@@ -15,6 +15,7 @@ import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.setValue
 import java.lang.RuntimeException
+import java.util.Date
 
 
 internal class AuthDataRepositoryTest : MongoTestSuite() {
@@ -82,12 +83,12 @@ internal class AuthDataRepositoryTest : MongoTestSuite() {
     }
 
     @Test
-    fun `should change password of user`() {
+    fun `should change password of user and reset refreshToken`() {
         // Given
         val login = "someLogin"
         val oldPwd = "some old pwd"
         val newPwd = "new password"
-        val newUser = AuthData(null, login, oldPwd)
+        val newUser = AuthData(null, login, oldPwd, refreshToken = "refresh token", refreshTokenDueDate = Date())
         transactionWrapper.executeInTransaction {
             repository.insertNewUser(newUser, it)
         }
@@ -99,7 +100,10 @@ internal class AuthDataRepositoryTest : MongoTestSuite() {
         // Then
         assertThat(actual).isTrue()
         assertThat(updated.password).isEqualTo(newPwd)
-        assertThat(updated).isEqualToIgnoringGivenFields(newUser, "password", "_id")
+        assertThat(updated.refreshToken).isNull()
+        assertThat(updated.refreshTokenDueDate).isNull()
+        assertThat(updated).isEqualToIgnoringGivenFields(newUser,
+                "password", "_id", "refreshToken", "refreshTokenDueDate")
     }
 
     @Test
@@ -152,6 +156,29 @@ internal class AuthDataRepositoryTest : MongoTestSuite() {
         // Then
         assertThat(actual).isInstanceOf(NotFound::class.java)
         actual as NotFound
+    }
+
+    @Test
+    fun `should set refreshToken and its due date`() {
+        // Given
+        val login = "someLogin"
+        val pwd = "some Pwd"
+        val newUser = AuthData(null, login, pwd)
+        val refreshToken = "some token"
+        val dueDate = Date()
+        transactionWrapper.executeInTransaction {
+            repository.insertNewUser(newUser, it)
+        }
+
+        // When
+        val actual = repository.setRefreshToken(login, refreshToken, dueDate)
+        val updated = repository.loadUserData(login)!!
+
+        // Then
+        assertThat(actual).isTrue()
+        assertThat(updated.refreshToken).isEqualTo(refreshToken)
+        assertThat(updated.refreshTokenDueDate).isEqualTo(dueDate)
+        assertThat(updated).isEqualToIgnoringGivenFields(newUser, "_id", "refreshToken", "refreshTokenDueDate")
     }
 
     private fun insertAuthDataWithParams(authData: AuthData, email: String, emailConfirmed: Boolean) {

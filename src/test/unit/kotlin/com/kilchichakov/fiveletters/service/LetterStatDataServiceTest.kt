@@ -1,7 +1,6 @@
 package com.kilchichakov.fiveletters.service
 
 import com.kilchichakov.fiveletters.exception.DatabaseException
-import com.kilchichakov.fiveletters.getDateTime
 import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.LetterStat
@@ -10,11 +9,11 @@ import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
 import com.kilchichakov.fiveletters.model.dto.GetLetterStatResponse
 import com.kilchichakov.fiveletters.repository.LetterStatDataRepository
 import com.kilchichakov.fiveletters.setUpTransactionWrapperMock
+import com.kilchichakov.fiveletters.util.getDateTime
 import com.mongodb.client.MongoCursor
 import dev.ktobe.toBe
 import dev.ktobe.toBeEqual
 import dev.ktobe.toContainExactly
-import dev.ktobe.toContainJust
 import io.mockk.Ordering
 import io.mockk.confirmVerified
 import io.mockk.every

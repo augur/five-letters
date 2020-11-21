@@ -47,12 +47,10 @@ class AuthGoogleService {
         when (val searchResult = authDataRepository.findAuthDataByEmail(email)) {
             is FoundOk -> {
                 LOG.info { "email=$email found OK" }
-                val user: UserDetails = User(searchResult.authData.login, "", searchResult.authData.authorities)
-                LOG.info { "built user=$user for JWT token" }
-                val jwt = jwtService.generateToken(user)
-                val refreshToken = refreshTokenService.generateRefreshToken(user.username)
+                val jwt = jwtService.generateToken(searchResult.authData)
+                val refreshToken = refreshTokenService.generateRefreshToken(searchResult.authData.login)
                 return AuthSuccess(auth = AuthResponse(
-                        login = user.username,
+                        login = searchResult.authData.login,
                         jwt = jwt.code,
                         jwtDueDate = jwt.dueDate,
                         refreshToken = refreshToken.code,

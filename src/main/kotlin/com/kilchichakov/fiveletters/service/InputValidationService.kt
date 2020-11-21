@@ -4,6 +4,7 @@ import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.exception.DataException
 import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
+import com.kilchichakov.fiveletters.model.dto.AuthRefreshRequest
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
@@ -29,6 +30,7 @@ class InputValidationService {
             is PageRequest -> doValidate(input)
             is UpdateProfileRequest -> doValidate(input)
             is SendLetterFreeDateRequest -> doValidate(input)
+            is AuthRefreshRequest -> doValidate(input)
             else -> LOG.warn { "no validation rules for $input" }
         }
     }
@@ -84,6 +86,13 @@ class InputValidationService {
         validation(sendLetterFreeDateRequest) {
             checkMessage(sendLetterFreeDateRequest.message)
             checkOpenDate(sendLetterFreeDateRequest.openDate)
+        }
+    }
+
+    private fun doValidate(authRefreshRequest: AuthRefreshRequest) {
+        validation(authRefreshRequest) {
+            checkLogin(authRefreshRequest.login)
+            checkRefreshToken(authRefreshRequest.refreshToken)
         }
     }
 
@@ -154,6 +163,10 @@ class InputValidationService {
         val localDate = Instant.now().atZone(ZoneId.systemDefault()).toLocalDate()
         val today = Day(localDate.year.toShort(), localDate.monthValue.toByte(), localDate.dayOfMonth.toByte())
         if (openDate <= today) errors.add(ValidationError("openDate", "not in future"))
+    }
+
+    private fun ValidationResult.checkRefreshToken(refreshToken: String) {
+        if (refreshToken.length > 100) errors.add(ValidationError("refreshToken", "is too long"))
     }
 
     data class ValidationError(val field: String, val message: String)

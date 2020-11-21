@@ -1,9 +1,9 @@
 package com.kilchichakov.fiveletters.repository
 
 import com.kilchichakov.fiveletters.MongoTestSuite
-import com.kilchichakov.fiveletters.getDateTime
 import com.kilchichakov.fiveletters.model.Letter
 import com.kilchichakov.fiveletters.model.SealedLetterEnvelop
+import com.kilchichakov.fiveletters.util.getDateTime
 import com.mongodb.client.MongoCollection
 import org.assertj.core.api.Assertions.assertThat
 import org.bson.types.ObjectId
@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 import org.litote.kmongo.findOne
 import org.litote.kmongo.findOneById
 import org.litote.kmongo.getCollection
-import java.text.SimpleDateFormat
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId

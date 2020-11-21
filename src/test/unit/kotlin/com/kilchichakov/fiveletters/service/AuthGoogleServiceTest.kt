@@ -6,6 +6,7 @@ import com.kilchichakov.fiveletters.model.AuthData
 import com.kilchichakov.fiveletters.model.FoundEmailUnconfirmed
 import com.kilchichakov.fiveletters.model.FoundOk
 import com.kilchichakov.fiveletters.model.NotFound
+import com.kilchichakov.fiveletters.model.authorities
 import com.kilchichakov.fiveletters.model.dto.AuthEmailNotFound
 import com.kilchichakov.fiveletters.model.dto.AuthEmailUnconfirmed
 import com.kilchichakov.fiveletters.model.dto.AuthSuccess
@@ -95,7 +96,7 @@ internal class AuthGoogleServiceTest {
             every { dueDate } returns refreshTokenDueDate
         }
 
-        every { jwtService.generateToken(any()) } returns jwt
+        every { jwtService.generateToken(any<AuthData>()) } returns jwt
         every { refreshTokenService.generateRefreshToken(any()) } returns refreshToken
 
         // When
@@ -109,15 +110,14 @@ internal class AuthGoogleServiceTest {
         actual.auth.jwtDueDate toBeEqual jwtDueDate
         actual.auth.refreshToken toBeEqual refreshTokenCode
         actual.auth.refreshTokenDueDate toBeEqual refreshTokenDueDate
-        val userSlot = slot<UserDetails>()
+        val userSlot = slot<AuthData>()
         verifyOrder {
             verifier.verify(idTokenString)
             authDataRepository.findAuthDataByEmail(email)
             jwtService.generateToken(capture(userSlot))
             refreshTokenService.generateRefreshToken(login)
         }
-        userSlot.captured.username toBe login
-        userSlot.captured.authorities toBe empty
+        userSlot.captured toBe authData
         confirmVerified(authDataRepository, jwtService, verifier, jobService, refreshTokenService)
     }
 

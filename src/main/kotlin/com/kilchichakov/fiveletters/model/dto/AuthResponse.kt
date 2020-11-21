@@ -1,7 +1,16 @@
 package com.kilchichakov.fiveletters.model.dto
 
-data class AuthResponse(val jwt: String) {
+import java.util.Date
+
+data class AuthResponse(
+        val login: String,
+        val jwt: String,
+        val jwtDueDate: Date,
+        val refreshToken: String,
+        val refreshTokenDueDate: Date,
+) {
     override fun toString(): String {
-        return "AuthResponse(jwt(hash)='${jwt.hashCode()}')"
+        return "AuthResponse(login='$login', jwt(hash)=${jwt.hashCode()}, jwtDueDate=$jwtDueDate, " +
+                "refreshToken(hash)=${refreshToken.hashCode()}, refreshTokenDueDate=$refreshTokenDueDate)"
     }
 }

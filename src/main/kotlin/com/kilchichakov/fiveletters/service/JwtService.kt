@@ -3,6 +3,8 @@ package com.kilchichakov.fiveletters.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.kilchichakov.fiveletters.LOG
+import com.kilchichakov.fiveletters.model.AuthData
+import com.kilchichakov.fiveletters.model.authorities
 import com.kilchichakov.fiveletters.util.now
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.core.userdetails.UserDetails
@@ -14,6 +16,7 @@ import java.time.temporal.TemporalUnit
 import java.util.Calendar
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import org.springframework.security.core.userdetails.User
 
 
 @Service
@@ -30,7 +33,6 @@ class JwtService(
             .acceptLeeway(1)
             .build()
 
-
     fun generateToken(userDetails: UserDetails): EncodedJwt {
         val expires = Date.from(clock.instant().plus(ttlSeconds, ChronoUnit.SECONDS))
         val roles = (userDetails.authorities.map { a -> a.authority }).toTypedArray()
@@ -42,6 +44,12 @@ class JwtService(
                 .withArrayClaim("roles", roles)
                 .sign(algorithm)
         return EncodedJwt(code, expires)
+    }
+
+    fun generateToken(authData: AuthData): EncodedJwt {
+        val user: UserDetails = User(authData.login, "", authData.authorities)
+        LOG.info { "built user=$user for JWT token" }
+        return generateToken(user)
     }
 
     /**

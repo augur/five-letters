@@ -9,6 +9,7 @@ import com.kilchichakov.fiveletters.model.NotFound
 import com.kilchichakov.fiveletters.model.UserData
 import com.mongodb.client.ClientSession
 import com.mongodb.client.MongoDatabase
+import java.util.Date
 import org.litote.kmongo.and
 import org.litote.kmongo.eq
 import org.litote.kmongo.findOne
@@ -36,9 +37,13 @@ class AuthDataRepository(
     }
 
     fun changePassword(login: String, encodedPassword: String): Boolean {
-        LOG.info { "updating password of $login" }
+        LOG.info { "updating password of $login, erasing refreshToken" }
         val byLogin = AuthData::login eq login
-        val update = setValue(AuthData::password, encodedPassword)
+        val update = and(
+                setValue(AuthData::password, encodedPassword),
+                setValue<String?>(AuthData::refreshToken, null),
+                setValue<Date?>(AuthData::refreshTokenDueDate, null),
+        )
         val result = collection.updateOne(byLogin, update)
         LOG.info { "updated ${result.modifiedCount} users" }
         return result.modifiedCount == 1L
@@ -61,5 +66,14 @@ class AuthDataRepository(
         }
         LOG.info { "not found with unconfirmed email=$email" }
         return NotFound
+    }
+
+    fun setRefreshToken(login: String, refreshToken: String, dueDate: Date): Boolean {
+        LOG.info { "setting refreshToken of $login, dueDate=$dueDate" }
+        val byLogin = AuthData::login eq login
+        val update = and(setValue(AuthData::refreshToken, refreshToken), setValue(AuthData::refreshTokenDueDate, dueDate))
+        val result = collection.updateOne(byLogin, update)
+        LOG.info { "updated ${result.modifiedCount} users" }
+        return result.modifiedCount == 1L
     }
 }

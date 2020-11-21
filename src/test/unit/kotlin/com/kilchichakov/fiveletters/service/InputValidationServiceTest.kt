@@ -3,6 +3,7 @@ package com.kilchichakov.fiveletters.service
 import com.kilchichakov.fiveletters.invokePrivate
 import com.kilchichakov.fiveletters.model.Day
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
+import com.kilchichakov.fiveletters.model.dto.AuthRefreshRequest
 import com.kilchichakov.fiveletters.model.dto.AuthRequest
 import com.kilchichakov.fiveletters.model.dto.PageRequest
 import com.kilchichakov.fiveletters.model.dto.RegisterRequest
@@ -163,6 +164,25 @@ internal class InputValidationServiceTest {
         verify {
             spy["checkMessage"](any<ValidationResult>(), message)
             spy["checkOpenDate"](any<ValidationResult>(), day)
+        }
+    }
+
+    @Test
+    fun `should validate auth refresh request`() {
+        // Given
+        val login = "some login"
+        val refreshToken = "some refresh token"
+        val spy = spyk(service, recordPrivateCalls = true)
+        every { spy["checkLogin"](any<ValidationResult>(), any<String>()) } returns 0
+        every { spy["checkRefreshToken"](any<ValidationResult>(), any<String>()) } returns 0
+
+        // When
+        spy.validate(AuthRefreshRequest(login, refreshToken))
+
+        // Then
+        verify {
+            spy["checkLogin"](any<ValidationResult>(), login)
+            spy["checkRefreshToken"](any<ValidationResult>(), refreshToken)
         }
     }
 
@@ -382,6 +402,22 @@ internal class InputValidationServiceTest {
         testCases.forEach {
             val vResult = ValidationResult(ArrayList())
             service.invokePrivate("checkOpenDate", vResult, it.value)
+            assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
+        }
+    }
+
+    @Test
+    fun `should check refresh token`() {
+        // Given
+        val testCases = listOf(
+                TestCase("xxx-yyy-zzz", true),
+                TestCase("x".repeat(101), false)
+        )
+
+        // Then
+        testCases.forEach {
+            val vResult = ValidationResult(ArrayList())
+            service.invokePrivate("checkRefreshToken", vResult, it.value)
             assertThat(vResult.errors.isEmpty()).isEqualTo(it.valid)
         }
     }

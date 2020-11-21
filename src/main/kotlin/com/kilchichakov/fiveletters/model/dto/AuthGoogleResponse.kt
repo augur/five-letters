@@ -1,11 +1,8 @@
 package com.kilchichakov.fiveletters.model.dto
 
 sealed class AuthGoogleResponse
-class AuthSuccess(val jwt: String): AuthGoogleResponse() {
+class AuthSuccess(val auth: AuthResponse): AuthGoogleResponse() {
     val type = "ok"
-    override fun toString(): String {
-        return "AuthSuccess(type='$type', jwt(hash)='${jwt.hashCode()}')"
-    }
 }
 class AuthEmailUnconfirmed(val email: String): AuthGoogleResponse() {
     val type = "unconfirmed"
