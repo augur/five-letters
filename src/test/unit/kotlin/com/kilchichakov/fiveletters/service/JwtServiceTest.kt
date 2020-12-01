@@ -29,7 +29,7 @@ internal class JwtServiceTest {
 
     @BeforeEach
     fun setUp() {
-        service = JwtService("secret", "issuer", 42, clock)
+        service = JwtService("secret", "issuer", 42, 60, clock)
     }
 
     @Test

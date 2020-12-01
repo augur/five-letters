@@ -24,13 +24,14 @@ class JwtService(
         @Value("\${JWT_SECRET}") secret: String,
         @Value("\${JWT_ISSUER}") private val issuer: String,
         @Value("\${JWT_TTL}") private val ttlSeconds: Long,
+        @Value("\${JWT_LEEWAY}") private val leeway: Long,
         private val clock: Clock
 ) {
 
     private val algorithm = Algorithm.HMAC256(secret)
     private val verifier = JWT.require(algorithm)
             .withIssuer(issuer)
-            .acceptLeeway(1)
+            .acceptLeeway(leeway)
             .build()
 
     fun generateToken(userDetails: UserDetails): EncodedJwt {

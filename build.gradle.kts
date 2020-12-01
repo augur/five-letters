@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "com.kilchichakov"
-version = "20.11.1"
+version = "20.12.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
