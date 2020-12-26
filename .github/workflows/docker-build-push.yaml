@@ -40,5 +40,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/augur/five-letters/fl-backend:latest
-            ghcr.io/augur/five-letters/fl-backend:20.12.1.test
+            augur/five-letters/fl-backend:latest
+            augur/five-letters/fl-backend:20.12.1.test
