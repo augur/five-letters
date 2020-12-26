@@ -40,5 +40,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            docker.pkg.github.com/augur/dtc-backend:latest
-            docker.pkg.github.com/augur/dtc-backend:20.12.1
+            ghcr.io/augur/dtc-backend:latest
+            ghcr.io/augur/dtc-backend:20.12.1
