@@ -24,10 +24,11 @@ jobs:
       -
         name: Retrieve version
         run: |
-          echo ::set-env name=TAG_NAME::$(cat build.gradle.kts | sed -n 's/^version = //p' | sed 's/"//g')
+          echo ::set-output name=tag_name::$(cat build.gradle.kts | sed -n 's/^version = //p' | sed 's/"//g')
+        id: get-version
       -
         name: print version
-        run: echo $TAG_NAME
+        run: echo ${{ steps.get-version.outputs.tag_name }}
 #      -
 #        name: Build with Gradle
 #        run: ./gradlew build
