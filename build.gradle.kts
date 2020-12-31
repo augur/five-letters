@@ -137,16 +137,6 @@ publishing {
 	}
 }
 
-task("printVersion") {
-	// any code that goes here is part of configuring the task
-	// this code will always get run, even if the task is not executed
-	doLast { // add a task action
-		// any code that goes here is part of executing the task
-		// this code will only get run if and when the task gets executed
-		println(project.version)
-	}
-}
-
 inline fun <reified C> Project.configure(name: String, configuration: C.() -> Unit) {
 	(this.tasks.getByName(name) as C).configuration()
 }

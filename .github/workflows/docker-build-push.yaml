@@ -27,26 +27,23 @@ jobs:
           echo ::set-output name=tag_name::$(cat build.gradle.kts | sed -n 's/^version = //p' | sed 's/"//g')
         id: get-version
       -
-        name: print version
-        run: echo ${{ steps.get-version.outputs.tag_name }}
-#      -
-#        name: Build with Gradle
-#        run: ./gradlew build
-#      -
-#        name: Login to GitHub Container Registry
-#        uses: docker/login-action@v1
-#        with:
-#          registry: ghcr.io
-#          username: ${{ github.repository_owner }}
-#          password: ${{ secrets.CR_PAT }}
-#      -
-#        name: Build and push
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: .
-#          file: ./Dockerfile
-#          platforms: linux/amd64
-#          push: true
-#          tags: |
-#            ghcr.io/augur/dtc-backend:latest
-#            ghcr.io/augur/dtc-backend:20.12.1
+        name: Build with Gradle
+        run: ./gradlew build
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/augur/dtc-backend:latest
+            ghcr.io/augur/dtc-backend:${{ steps.get-version.outputs.tag_name }}
