@@ -22,14 +22,12 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       -
-        name: Get project version
-        uses: eskatos/gradle-command-action@v1
-        with:
-          arguments: printVersion
-        id: get-project-version
+        name: Retrieve version
+        run: |
+          echo ::set-env name=TAG_NAME::$(cat build.gradle.kts | sed -n 's/^version = //p' | sed 's/"//g')
       -
         name: print version
-        run: echo '${{ steps.get-project-version.outputs }}'
+        run: echo $TAG_NAME
 #      -
 #        name: Build with Gradle
 #        run: ./gradlew build
