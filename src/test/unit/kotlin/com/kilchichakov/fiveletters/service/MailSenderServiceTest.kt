@@ -9,6 +9,7 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,6 +19,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
 import java.net.URI
+import java.util.Base64
+import org.springframework.http.HttpEntity
+import org.springframework.util.MultiValueMap
 
 @ExtendWith(MockKExtension::class)
 internal class MailSenderServiceTest {
@@ -47,26 +51,36 @@ internal class MailSenderServiceTest {
         val subj = "somesubj"
         val text = "sometxt"
         val email = Email(to, subj, text)
-        val slot = slot<URI>()
-        val response = mockk<ResponseEntity<Any>>()
+        val requestSlot = slot<HttpEntity<MultiValueMap<String, Any>>>()
+        val response = mockk<ResponseEntity<String>>()
         every { response.statusCode } returns HttpStatus.OK
-        every { restTemplate.postForEntity(capture(slot), null,  Any::class.java) } returns response
+        every { restTemplate.postForEntity(any<String>(), any<HttpEntity<Any>>(),  String::class.java) } returns response
 
         // When
         service.sendEmail(email)
 
         // Then
-        assertThat(slot.captured.toString()).contains("$URI?from=$FROM&to=$to&subject=$subj&text=$text")
+        verify {
+            restTemplate.postForEntity(URI, capture(requestSlot), String::class.java)
+        }
+        assertThat(requestSlot.captured.body?.get("to")).containsExactly(to)
+        val mm = requestSlot.captured.body?.get("file")?.first() as HttpEntity<ByteArray>
+        val decoded = String(mm.body!!)
+        assertThat(decoded).contains(subj, text)
     }
 
     @Test
     fun `should throw in case of failure`() {
         // Given
-        val response = mockk<ResponseEntity<Any>>()
+        val to = "poupa"
+        val subj = "somesubj"
+        val text = "sometxt"
+        val email = Email(to, subj, text)
+        val response = mockk<ResponseEntity<String>>()
         every { response.statusCode } returns HttpStatus.INTERNAL_SERVER_ERROR
-        every { restTemplate.postForEntity(any<URI>(), null,  Any::class.java) } returns response
+        every { restTemplate.postForEntity(any<String>(), any<HttpEntity<Any>>(),  String::class.java) } returns response
 
         // When
-        assertThrows<ExternalServiceException> { service.sendEmail(mockk(relaxed = true)) }
+        assertThrows<ExternalServiceException> { service.sendEmail(email) }
     }
 }

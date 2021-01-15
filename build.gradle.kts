@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "com.kilchichakov"
-version = "20.12.1"
+version = "21.1.1"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
@@ -38,6 +38,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
+	implementation("org.springframework:spring-context-support")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -46,6 +47,7 @@ dependencies {
 	implementation("io.github.microutils:kotlin-logging:$muLoggingVersion")
 	implementation("org.slf4j:slf4j-api:$slf4jVersion")
 	implementation("com.google.api-client:google-api-client:$googleApiClientVersion")
+	implementation("com.sun.mail:javax.mail:1.6.2")
 	//implementation("org.slf4j:slf4j-log4j12:$slf4jVersion")
 
 	testImplementation("dev.ktobe:ktobe:0.0.1")

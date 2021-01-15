@@ -2,6 +2,7 @@ package com.kilchichakov.fiveletters.controller
 
 import com.kilchichakov.fiveletters.LOG
 import com.kilchichakov.fiveletters.aspect.Logged
+import com.kilchichakov.fiveletters.model.Email
 import com.kilchichakov.fiveletters.model.OneTimePassCode
 import com.kilchichakov.fiveletters.model.dto.AdminChangePasswordRequest
 import com.kilchichakov.fiveletters.model.job.DailyMailingJobPayload
@@ -15,6 +16,7 @@ import com.kilchichakov.fiveletters.service.InputValidationService
 import com.kilchichakov.fiveletters.service.JobService
 import com.kilchichakov.fiveletters.service.LetterService
 import com.kilchichakov.fiveletters.service.LetterStatDataService
+import com.kilchichakov.fiveletters.service.MailSenderService
 import com.kilchichakov.fiveletters.service.PassCodeService
 import com.kilchichakov.fiveletters.service.SystemService
 import com.kilchichakov.fiveletters.service.TransactionWrapper
@@ -103,16 +105,19 @@ class AdminController {
     @Autowired
     private lateinit var transactionWrapper: TransactionWrapper
 
+    @Autowired
+    private lateinit var emailSenderService: MailSenderService
+
     @GetMapping("/test1")
     @Logged
     fun runTest() {
         LOG.info { "running test1" }
 
-        val job = Job(null, JobSchedule(Date(), RepeatMode.NEVER, 0), DailyMailingJobPayload(""))
-        transactionWrapper.executeInTransaction { jobRepository.insertJob(job, it) }
-
-        //jobService.scheduleEmailConfirmation("root")
-        //val jobs = jobService.getReadyJobs()
-        //jobService.serve(jobs.first())
+        val email = Email(
+                to = "user@example.com",
+                subject = "test message",
+                html = "<html>test text</html>"
+        )
+        emailSenderService.sendEmail(email)
     }
 }
