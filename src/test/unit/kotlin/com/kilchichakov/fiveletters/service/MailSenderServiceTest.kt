@@ -48,8 +48,8 @@ internal class MailSenderServiceTest {
     fun `should send email`() {
         // Given
         val to = "poupa"
-        val subj = "somesubj"
-        val text = "sometxt"
+        val subj = "some english subject"
+        val text = "сам рашн текст"
         val email = Email(to, subj, text)
         val requestSlot = slot<HttpEntity<MultiValueMap<String, Any>>>()
         val response = mockk<ResponseEntity<String>>()
@@ -66,7 +66,7 @@ internal class MailSenderServiceTest {
         assertThat(requestSlot.captured.body?.get("to")).containsExactly(to)
         val mm = requestSlot.captured.body?.get("file")?.first() as HttpEntity<ByteArray>
         val decoded = String(mm.body!!)
-        assertThat(decoded).contains(subj, text)
+        assertThat(decoded).contains(subj, Base64.getMimeEncoder().encodeToString(text.toByteArray()))
     }
 
     @Test

@@ -65,17 +65,9 @@ class MailSenderService {
         }
     }
 
-    private fun createUri(url: String, params: Map<String, Any?>): URI {
-        val builder = UriComponentsBuilder.fromUriString(url)
-        params.forEach { (name, value) ->
-            if (value != null) builder.queryParam(name, value)
-        }
-        return builder.build().toUri()
-    }
-
     private fun buildMimeMessage(email: Email): ByteArray {
         val msg = javaMailSender.createMimeMessage()
-        val helper = MimeMessageHelper(msg, true)
+        val helper = MimeMessageHelper(msg, true, "utf-8")
         helper.setFrom(mailProperties.fromAddress)
         helper.addTo(email.to)
         helper.setSubject(email.subject)
