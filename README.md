@@ -9,3 +9,5 @@
 * JWT_ISSUER
 * JWT_SECRET
 * JWT_TTL
+
+* Working on Forking and committing on personal branches
